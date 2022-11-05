@@ -23,7 +23,7 @@
   "When `t', `jack-html' raises an error when we pass it a non component object.
 
 For instance, a vector like `[a b c]' can't be a component passed to `jack-html'.
-If `nil', which is the default value, `jack-html' process non component object
+If `nil', which is the default value, `jack-html' processes non component object
 as the empty string.
 
 For instance,
