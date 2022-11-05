@@ -1,10 +1,9 @@
-#+TITLE: JACK
-
 * osta-html implementation details
 :PROPERTIES:
 :ONE_PAGE: t
 :CUSTOM_ID: /osta-html-implementation-details/
 :ONE_CREATED_AT: [2022-02-08 Tue]
+:ONE_UPDATED_AT: [2022-11-05 Sat]
 :END:
 ** Summary
 
@@ -564,12 +563,23 @@ With that said, here is the source code of ~osta-html~ at commit ~cd43e0b~:
     (concat (plist-get tree :left) (plist-get tree :right))))
 #+END_SRC
 
-* Recursive vs. iterative implementation of osta-html in Elisp
+* Recursive vs. iterative implementation of jack-html in Elisp
 :PROPERTIES:
 :ONE_PAGE: t
-:CUSTOM_ID: /recursive-vs-iterative-implementation-of-osta-html-in-elisp/
+:CUSTOM_ID: /recursive-vs-iterative-implementation-of-jack-html-in-elisp/
 :ONE_CREATED_AT: [2022-02-07 Mon]
+:ONE_UPDATED_AT: [2022-11-05 Sat]
 :END:
+** jack-html was named osta-html
+
+This article has been written when the package ~jack~ was named ~osta~.
+
+To be precise, the function ~osta-html~ has been renamed ~jack-html~ at
+commit ~851c8f6~.
+
+We haven't modified its content.  Don't be surprise if you look at the
+code base now to see no ~osta-html~ function.
+
 ** Push the limits
 
 At commit ~554d733~ (2022-01-23), I finally got ~osta-html~ working and
