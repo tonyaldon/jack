@@ -20,11 +20,13 @@
    s))
 
 (defvar jack-html-raise-error-p nil
-  "When `t', `jack-html' raises an error when we pass it a non component object.
+  "When `t', `jack-html' raises an error for non component objects.
 
-For instance, a vector like `[a b c]' can't be a component passed to `jack-html'.
-If `nil', which is the default value, `jack-html' processes non component object
-as the empty string.
+For instance, a vector like `[a b c]' can't be a component passed
+to `jack-html'.
+
+If `nil', which is the default value, `jack-html' processes non
+component object as the empty string.
 
 For instance,
 
