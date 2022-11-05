@@ -216,15 +216,18 @@
                (format template "container" "p-foo" "p-bar"))
              "<div class=\"container\"><p id=\"p-foo\">foo</p><p id=\"p-bar\">bar</p></div>"))))
 
-;; (ert-deftest osta-html-lisp-nesting-test ()
+;; (ert-deftest jack-html-lisp-nesting-test ()
+;;   ;; This test exists to ensure, we don't modify the implementation
+;;   ;; in a way that it fails "badly" for "deep" nested structure.  For,
+;;   ;; instance for 10000 nested `:div', `jack-html' lasts about 10s
+;;   ;; to return the result but it doesn't break.
+;;   ;;
 ;;   ;; In the first implementation (recursive way) of `osta-html'
 ;;   ;; (commit 554d733), `osta-html' raised the error ("Lisp nesting
 ;;   ;; exceeds ‘max-lisp-eval-depth’") for nested list of more than
 ;;   ;; 50 `:div'.
-;;   ;; This test exists to ensure, we don't modify the implementation
-;;   ;; in a way that it fails "badly" for "deep" nested structure.  For,
-;;   ;; instance for 10000 nested `:div', `osta-html' lasts about 10s
-;;   ;; to return the result but it doesn't break.
+;;   ;;
+;;   ;; Note that at commit 851c8f6 `osta-html' has been renamed `jack-html'.
 ;;   (message "Might take 10 seconds or more...")
 ;;   (let* ((max-lisp-eval-depth 800) ; default value
 ;;          ;; (nested-foo-comp 3) -> (:div (:div (:div \"foo\")))
@@ -234,4 +237,4 @@
 ;;               (dotimes (_ n) (setq comp (list :div comp)))
 ;;               comp)))
 ;;          (comp (funcall nested-foo-comp 10000)))
-;;     (should (osta-html comp))))
+;;     (should (jack-html comp))))
