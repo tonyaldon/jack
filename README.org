@@ -36,7 +36,7 @@ In the keyword defining the HTML tag you can use ~/~ to declare its
 #+END_SRC
 
 Note that I would have prefered to use ~#~ for declaring the ~id~ but it
-has to be escaped in keywords which is ugly ~'(:div\#id.class)~.
+has to be escaped in keywords which is ugly.
 
 Tag content can be lists of components:
 
