@@ -81,3 +81,34 @@ Tag content and attributes can be variables:
    `(:p (@ :id ,x) ,y)))
 ;; "<p id=\"foo\">bar</p>"
 #+END_SRC
+
+What happens if you pass to ~jack-html~ a lisp object that is not a
+component?
+
+If the variable ~jack-html-raise-error-p~ is set to ~nil~, which is the
+default value, ~jack-html~ processes non component object as the empty
+string.
+
+Let's consider the case of the vector like ~[a b c]~ that is not a
+component for ~jack-html~.
+
+We have
+
+#+BEGIN_SRC emacs-lisp
+(let ((jack-html-raise-error-p nil))
+  (jack-html \"foo\" [a b c] \"bar\"))
+;; "foobar"
+#+END_SRC
+
+and,
+
+#+BEGIN_SRC emacs-lisp
+(let ((jack-html-raise-error-p t))
+  (jack-html \"foo\" [a b c] \"bar\"))
+#+END_SRC
+
+which raises the error:
+
+#+BEGIN_SRC text
+Object '[a b c]' of type 'vector' can't be a component in 'jack-html'
+#+END_SRC
