@@ -1,4 +1,4 @@
-;;; osta.el --- HTML renderer library -*- lexical-binding: t; -*-
+;;; jack.el --- HTML renderer library -*- lexical-binding: t; -*-
 ;;
 ;; Copyright (C) 2021-2022 Tony Aldon
 
@@ -6,7 +6,7 @@
 
 ;;; code:
 
-(defun osta-escape (s)
+(defun jack-escape (s)
   "Return the string S with some caracters escaped.
 `<', `>' and `&' are escaped."
   (replace-regexp-in-string
@@ -19,32 +19,32 @@
                  ("'"  "&apos;")))
    s))
 
-(defvar osta-html-raise-error-p nil
-  "When `t', `osta-html' raises an error when we pass it a non component object.
+(defvar jack-html-raise-error-p nil
+  "When `t', `jack-html' raises an error when we pass it a non component object.
 
-For instance, a vector like `[a b c]' can't be a component passed to `osta-html'.
-If `nil', which is the default value, `osta-html' process non component object
+For instance, a vector like `[a b c]' can't be a component passed to `jack-html'.
+If `nil', which is the default value, `jack-html' process non component object
 as the empty string.
 
 For instance,
 
-  (let ((osta-html-raise-error-p nil))
-    (osta-html \"foo\" [a b c] \"bar\")) ; \"foobar\"
+  (let ((jack-html-raise-error-p nil))
+    (jack-html \"foo\" [a b c] \"bar\")) ; \"foobar\"
 
 and,
 
-  (let ((osta-html-raise-error-p t))
-    (osta-html \"foo\" [a b c] \"bar\"))
+  (let ((jack-html-raise-error-p t))
+    (jack-html \"foo\" [a b c] \"bar\"))
 
 raises the error:
 
-  \"Object '[a b c]' of type 'vector' can't be a component in 'osta-html'\"")
+  \"Object '[a b c]' of type 'vector' can't be a component in 'jack-html'\"")
 
-(defun osta-parse-tag-kw (tag-kw)
+(defun jack-parse-tag-kw (tag-kw)
   "Return a list of (\"tag\" \"id\" \"class\") from a TAG-KW.
 If TAG-KW is not a valid tag keyword, return nil.
 
-For instance, `osta-parse-tag-kw' behaves like this:
+For instance, `jack-parse-tag-kw' behaves like this:
     :div                    -> (\"div\" nil nil)
     :div/id                 -> (\"div\" \"id\" nil)
     :div.class              -> (\"div\" nil \"class\")
@@ -65,7 +65,7 @@ For instance, `osta-parse-tag-kw' behaves like this:
           (error "Wrong tag keyword: %S" tag-kw)))
     (error "Wrong tag keyword: %S" tag-kw)))
 
-(defun osta-tag (tag-kw &optional attributes)
+(defun jack-tag (tag-kw &optional attributes)
   "Return a plist describing the type of TAG-KW and its ATTRIBUTES.
 
 Classes in TAG-KW (`.class') and ATTRIBUTES (`:class') are merged.
@@ -73,7 +73,7 @@ Classes in TAG-KW (`.class') and ATTRIBUTES (`:class') are merged.
 
 For instance:
 
-  (osta-tag :hr)
+  (jack-tag :hr)
 
 returns
 
@@ -81,7 +81,7 @@ returns
 
 and:
 
-  (osta-tag :div '(:id \"id\" :class \"class\"))
+  (jack-tag :div '(:id \"id\" :class \"class\"))
 
 returns
 
@@ -90,7 +90,7 @@ returns
 "
   (let ((void-tags '("area" "base" "br" "col" "embed" "hr" "img" "input"   ; https://developer.mozilla.org/en-US/docs/Glossary/Empty_element
                      "keygen" "link" "meta" "param" "source" "track" "wbr")))
-    (seq-let (tag id classes) (osta-parse-tag-kw tag-kw)
+    (seq-let (tag id classes) (jack-parse-tag-kw tag-kw)
       (let* ((kw->a (lambda (kw) (substring (symbol-name kw) 1))) ; :id -> "id"
              (p->a-v                                              ; (:id "foo") -> "id=\"foo\""
               (lambda (p)
@@ -99,7 +99,7 @@ returns
                     ('t (concat attr "=\""  attr "\""))
                     ('nil nil)
                     ((and _ value)
-                     (concat attr "=\"" (osta-escape value) "\""))))))
+                     (concat attr "=\"" (jack-escape value) "\""))))))
              (pairs (seq-partition attributes 2))
              ;; we merge classes from `tag-kw' and `attributes' and add it to the pairs
              (-pairs (if classes
@@ -123,7 +123,7 @@ returns
           `(:left  ,(concat "<" tag -attrs ">")
             :right ,(concat "</" tag ">")))))))
 
-(defun osta-html (&rest components)
+(defun jack-html (&rest components)
   ""
   (let* ((update-tree-comp
           (lambda (tree comp)
@@ -175,8 +175,8 @@ returns
                (seq-let (tag-kw attr) comp
                  ;; check if `attr' is of the form '(@ :id "id" :class "class")
                  (if (and (listp attr) (equal (car attr) '@))
-                     (list (osta-tag tag-kw (cdr attr)) (cddr comp))
-                   (list (osta-tag tag-kw) (cdr comp))))
+                     (list (jack-tag tag-kw (cdr attr)) (cddr comp))
+                   (list (jack-tag tag-kw) (cdr comp))))
              (setq tree (funcall update-tree-tag tree tag new-rest))
              (when new-rest (push new-rest rest))
              (setq comps (append comp-children (and new-rest '(:rest))))
@@ -189,13 +189,13 @@ returns
          (setq comp (car comps)))
         ;; non component object
         ((and _ obj)
-         (when osta-html-raise-error-p
-           (error "Object '%S' of type '%s' can't be a component in 'osta-html'"
+         (when jack-html-raise-error-p
+           (error "Object '%S' of type '%s' can't be a component in 'jack-html'"
                   obj (type-of obj)))
          (setq comps (cdr comps))
          (setq comp (car comps)))))
     (concat (plist-get tree :left) (plist-get tree :right))))
 
+(provide 'jack)
 
-(provide 'osta)
-;;; org-bars.el ends here
+;;; jack.el ends here
