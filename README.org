@@ -96,7 +96,7 @@ We have
 
 #+BEGIN_SRC emacs-lisp
 (let ((jack-html-raise-error-p nil))
-  (jack-html \"foo\" [a b c] \"bar\"))
+  (jack-html "foo" [a b c] "bar"))
 ;; "foobar"
 #+END_SRC
 
@@ -104,7 +104,7 @@ and,
 
 #+BEGIN_SRC emacs-lisp
 (let ((jack-html-raise-error-p t))
-  (jack-html \"foo\" [a b c] \"bar\"))
+  (jack-html "foo" [a b c] "bar"))
 #+END_SRC
 
 which raises the error:
