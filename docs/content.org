@@ -2,9 +2,9 @@
 
 * osta-html implementation details
 :PROPERTIES:
-:OSTA_PAGE: t
+:ONE_PAGE: t
 :CUSTOM_ID: /osta-html-implementation-details/
-:OSTA_DATE: [2022-02-08 Tue]
+:ONE_CREATED_AT: [2022-02-08 Tue]
 :END:
 ** Summary
 
@@ -19,7 +19,7 @@ In this post, we show how ~osta-html~ processes the following *component*
 
 in order to return the following string
 
-#+ATTR_OSTA_RESULTS:
+#+ATTR_ONE_RESULTS:
 #+BEGIN_SRC emacs-lisp
 "<div id=\"foo\" class=\"bar\">A<p class=\"baz\">B<hr />C</p>DEF</div>"
 #+END_SRC
@@ -450,7 +450,7 @@ For instance:
 
    returns
 
-   #+ATTR_OSTA_RESULTS:
+   #+ATTR_ONE_RESULTS:
    #+BEGIN_SRC emacs-lisp
    (:left "<hr />")
    #+END_SRC
@@ -463,7 +463,7 @@ For instance:
 
    returns
 
-   #+ATTR_OSTA_RESULTS:
+   #+ATTR_ONE_RESULTS:
    #+BEGIN_SRC emacs-lisp
    (:left  "<div id=\"id\" class=\"class\">"
     :right "</div>")
@@ -477,7 +477,7 @@ For instance:
 
    returns
 
-   #+ATTR_OSTA_RESULTS:
+   #+ATTR_ONE_RESULTS:
    #+BEGIN_SRC emacs-lisp
    (:left  "<div id=\"id\" class=\"class\">"
     :right "</div>")
@@ -566,9 +566,9 @@ With that said, here is the source code of ~osta-html~ at commit ~cd43e0b~:
 
 * Recursive vs. iterative implementation of osta-html in Elisp
 :PROPERTIES:
-:OSTA_PAGE: t
+:ONE_PAGE: t
 :CUSTOM_ID: /recursive-vs-iterative-implementation-of-osta-html-in-elisp/
-:OSTA_DATE: [2022-02-07 Mon]
+:ONE_CREATED_AT: [2022-02-07 Mon]
 :END:
 ** Push the limits
 
@@ -593,7 +593,7 @@ So I decided to push the limits of ~osta-html~ and gave it as input
 
 And for only ~46~ nested ~:div~, ~osta-html~ raised the following error:
 
-#+ATTR_OSTA_RESULTS:
+#+ATTR_ONE_RESULTS:
 : (error "Lisp nesting exceeds ‘max-lisp-eval-depth’")
 
 (Note that I use the default value of ~800~ for the variable
@@ -983,7 +983,7 @@ For instance: (nested-foo-comp 3) -> (:div (:div (:div \"foo\")))"
                (benchmark-run 10 (funcall osta-html comp))))))
 #+END_SRC
 
-#+ATTR_OSTA_RESULTS:
+#+ATTR_ONE_RESULTS:
 #+BEGIN_SRC text
 ------------------------------------
 osta-html-REC     0.000304   0 0.000
