@@ -124,7 +124,29 @@ returns
             :right ,(concat "</" tag ">")))))))
 
 (defun jack-html (&rest components)
-  ""
+  "Render COMPONENTS as an HTML string.
+
+For instance:
+
+  (jack-html '(:section (:div (:p \"foo\"))))
+
+returns
+
+    \"<section><div><p>foo</p></div></section>\"
+
+and:
+
+  (jack-html '(:div/id.class-1.class-2
+               (@ :class \"class-3\" :style \"color:red;\")
+               \"foo\"))
+
+returns
+
+  \"<div id=\\\"id\\\" class=\\\"class-1 class-2 class-3\\\" style=\\\"color:red;\\\">foo</div>\"
+
+Note that when `jack-html-raise-error-p' is set to `t',
+`jack-html' raises an error when we pass it a non component object."
+
   (let* ((update-tree-comp
           (lambda (tree comp)
             (let* ((comp-str (if (stringp comp) comp (number-to-string comp)))
