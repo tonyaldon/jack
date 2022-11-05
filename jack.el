@@ -125,6 +125,29 @@ returns
           `(:left  ,(concat "<" tag -attrs ">")
             :right ,(concat "</" tag ">")))))))
 
+(defsubst jack--update-tree-comp (tree comp)
+  (let* ((comp-str (if (stringp comp) comp (number-to-string comp)))
+         (left (concat (plist-get tree :left) comp-str))
+         (right (plist-get tree :right)))
+    `(:left ,left :right ,right)))
+
+(defsubst jack--update-tree-tag (tree tag new-rest)
+  (let* ((tag-left (plist-get tag :left))
+         (left (concat (plist-get tree :left) tag-left))
+         (tag-right (or (plist-get tag :right) ""))
+         (tree-right (plist-get tree :right))
+         (right (if new-rest
+                    `(:left ,tag-right :right ,tree-right)
+                  (concat tag-right tree-right))))
+    `(:left ,left :right ,right)))
+
+(defsubst jack--update-tree-rest (tree)
+  (let* ((tree-left (plist-get tree :left))
+         (tree-right-left (plist-get (plist-get tree :right) :left))
+         (tree-right-right (plist-get (plist-get tree :right) :right))
+         (left (concat tree-left tree-right-left)))
+    `(:left ,left :right ,tree-right-right)))
+
 (defun jack-html (&rest components)
   "Render COMPONENTS as an HTML string.
 
@@ -149,30 +172,7 @@ returns
 Note that when `jack-html-raise-error-p' is set to `t',
 `jack-html' raises an error when we pass it a non component object."
 
-  (let* ((update-tree-comp
-          (lambda (tree comp)
-            (let* ((comp-str (if (stringp comp) comp (number-to-string comp)))
-                   (left (concat (plist-get tree :left) comp-str))
-                   (right (plist-get tree :right)))
-              `(:left ,left :right ,right))))
-         (update-tree-tag
-          (lambda (tree tag new-rest)
-            (let* ((tag-left (plist-get tag :left))
-                   (left (concat (plist-get tree :left) tag-left))
-                   (tag-right (or (plist-get tag :right) ""))
-                   (tree-right (plist-get tree :right))
-                   (right (if new-rest
-                              `(:left ,tag-right :right ,tree-right)
-                            (concat tag-right tree-right))))
-              `(:left ,left :right ,right))))
-         (update-tree-rest
-          (lambda (tree)
-            (let* ((tree-left (plist-get tree :left))
-                   (tree-right-left (plist-get (plist-get tree :right) :left))
-                   (tree-right-right (plist-get (plist-get tree :right) :right))
-                   (left (concat tree-left tree-right-left)))
-              `(:left ,left :right ,tree-right-right))))
-         ;; initialize state
+  (let* (;; initialize state
          (tree '(:left "" :right ""))
          rest
          (comps components)
@@ -185,7 +185,7 @@ Note that when `jack-html-raise-error-p' is set to `t',
          (setq comp (car comps)))
         ;; string component or an integer component
         ((or (pred stringp) (pred numberp))
-         (setq tree (funcall update-tree-comp tree comp))
+         (setq tree (jack--update-tree-comp tree comp))
          (setq comps (cdr comps))
          (setq comp (car comps)))
         ;; not a tag component but a list of components like '("foo" "bar")
@@ -201,14 +201,14 @@ Note that when `jack-html-raise-error-p' is set to `t',
                  (if (and (listp attr) (equal (car attr) '@))
                      (list (jack-tag tag-kw (cdr attr)) (cddr comp))
                    (list (jack-tag tag-kw) (cdr comp))))
-             (setq tree (funcall update-tree-tag tree tag new-rest))
+             (setq tree (jack--update-tree-tag tree tag new-rest))
              (when new-rest (push new-rest rest))
              (setq comps (append comp-children (and new-rest '(:rest))))
              (setq comp (car comps)))))
         ;; make the latest list of components added to `rest' the
         ;; part of `components' to be treated in the next iteration
         (:rest
-         (setq tree (funcall update-tree-rest tree))
+         (setq tree (jack--update-tree-rest tree))
          (setq comps (pop rest))
          (setq comp (car comps)))
         ;; non component object
