@@ -1,13 +1,13 @@
-* osta-html implementation details
+* jack-html implementation details
 :PROPERTIES:
 :ONE_PAGE: t
-:CUSTOM_ID: /osta-html-implementation-details/
+:CUSTOM_ID: /jack-html-implementation-details/
 :ONE_CREATED_AT: [2022-02-08 Tue]
 :ONE_UPDATED_AT: [2022-11-05 Sat]
 :END:
 ** Summary
 
-In this post, we show how ~osta-html~ processes the following *component*
+In this post, we show how ~jack-html~ processes the following *component*
 
 #+BEGIN_SRC emacs-lisp
 '(:div/foo.bar
@@ -35,16 +35,20 @@ that we can use to produce this following html snippet:
 
 ** Description of the program
 
-In this section we call ~input-tree~ the data structure ~osta-html~
+In this section we call ~input-tree~ the data structure ~jack-html~
 receives as input.
 
 For instance, in the form
 
-: (osta-html '(:div.foo (:p "bar-1" (:span "baz") "bar-2")))
+#+BEGIN_SRC emacs-lisp
+(jack-html '(:div.foo (:p "bar-1" (:span "baz") "bar-2")))
+#+END_SRC
 
 the data structure
 
-: '(:div.foo (:p "bar-1" (:span "baz") "bar-2"))
+#+BEGIN_SRC emacs-lisp
+'(:div.foo (:p "bar-1" (:span "baz") "bar-2"))
+#+END_SRC
 
 is the ~input-tree~.
 
@@ -119,7 +123,7 @@ processed later.
 4) when ~comp~ is a tag component, two cases must be distinguished
    according to the value of ~(cdr comps)~:
    1) if ~(cdr comps)~ is non-nil:
-      - we update ~tree~ according to the value returned by ~osta-tag~ and
+      - we update ~tree~ according to the value returned by ~jack-tag~ and
         by dividing the right part of ~tree~ into two parts,
       - we push the components ~(cdr comps)~ on the stack ~rest~ and,
       - the components to be treated in the next iteration are the
@@ -133,7 +137,7 @@ processed later.
       - it means that there is no part of ~input-tree~ to be added to
         the stack ~rest~ at this iteration, so ~rest~ stays unchanged,
       - we just update ~tree~ according to the value returned by
-        ~osta-tag~ (without dividing the right part of ~tree~) and,
+        ~jack-tag~ (without dividing the right part of ~tree~) and,
       - the components to be treated in the next iteration are the
         children of the tag component ~comp~ (which can be either ~(cdr
         comp)~ or ~(cddr comp)~), so ~comps~ is set to be those children,
@@ -147,7 +151,7 @@ processed later.
       element of ~rest~ and remove that first element from ~rest~ (this
       can be done like this ~(setq comps (pop rest))~),
 6) when ~comp~ is any other object, we skip it or we raise an error
-   depending on the variable ~osta-html-raise-error-p~.
+   depending on the variable ~jack-html-raise-error-p~.
 
 Finally, when ~comp~ is ~nil~ and ~(cdr comps)~ too, it means that we have
 completly traversed ~input-tree~, no more iterations are needed and we
@@ -159,7 +163,7 @@ Let's go through each iteration that the following evaluation implies
 by printing out and commenting the successive states of our program:
 
 #+BEGIN_SRC emacs-lisp
-(osta-html
+(jack-html
  '(:div/foo.bar
    "A"
    (:p (@ :class "baz") "B" (:hr) "C")
@@ -197,7 +201,7 @@ As ~comp~ (equal to ~(:div/foo.bar ...)~) is a tag component, and is the
 only component in ~comps~:
 
 1) ~tree~ is updated with the left part and right part of the tag
-   returned by ~osta-tag~ function,
+   returned by ~jack-tag~ function,
 2) ~rest~ stack stays ~nil~,
 3) the components of ~input-tree~ that should be treated in the next
    iteration are the children of the tag ~comp~, which are the
@@ -238,8 +242,8 @@ not the only components in ~comps~:
 
 1) ~tree~ is updated with the left part being the concatenation of its
    current left part and the left part of the tag returned by
-   ~osta-tag~, and the right part is a subtree with its left part being
-   the right part of the tag return by ~osta-tag~ and the right part
+   ~jack-tag~, and the right part is a subtree with its left part being
+   the right part of the tag return by ~jack-tag~ and the right part
    being its current right part,
 2) we push the ~cdr~ of ~comps~ to the stack ~rest~ in order to treat it
    after,
@@ -281,7 +285,7 @@ components in ~comps~:
 
 1) ~tree~ is updated with the left part being the concatenation of its
    current left part and the left part of the tag returned by
-   ~osta-tag~, and the right part is a subtree with its left part being
+   ~jack-tag~, and the right part is a subtree with its left part being
    the empty string ~""~ (because ~(:hr)~ is a void tag) and the right
    part being its current right part,
 2) we push the ~cdr~ of ~comps~ to the stack ~rest~ in order to treat it
@@ -423,144 +427,6 @@ part of ~tree~.
 
 #+BEGIN_SRC emacs-lisp
 "<div id=\"foo\" class=\"bar\">A<p class=\"baz\">B<hr />C</p>DEF</div>"
-#+END_SRC
-
-** The code
-
-In this section we reproduce the code of the function ~osta-html~ at
-commit ~cd43e0b~.
-
-But before doing so, as ~osta-html~ uses the function ~osta-tag~, we
-describe it and give some examples that demonstrate its behavior.
-
-The function ~osta-tag~ takes as input a keyword (representing a tag
-maybe containing informations about its ~id~ or its ~class~) and
-optionally a plist of attributes.  The function ~osta-tag~ returns a
-plist describing the type of tag and its attributes that can be used
-to produce html strings.
-
-For instance:
-
-1) Evaluating the form:
-
-   #+BEGIN_SRC emacs-lisp
-   (osta-tag :hr)
-   #+END_SRC
-
-   returns
-
-   #+ATTR_ONE_RESULTS:
-   #+BEGIN_SRC emacs-lisp
-   (:left "<hr />")
-   #+END_SRC
-
-2) Evaluating the form:
-
-   #+BEGIN_SRC emacs-lisp
-   (osta-tag :div/id.class)
-   #+END_SRC
-
-   returns
-
-   #+ATTR_ONE_RESULTS:
-   #+BEGIN_SRC emacs-lisp
-   (:left  "<div id=\"id\" class=\"class\">"
-    :right "</div>")
-   #+END_SRC
-
-3) Evaluating the form:
-
-   #+BEGIN_SRC emacs-lisp
-   (osta-tag :div '(:id "id" :class "class"))
-   #+END_SRC
-
-   returns
-
-   #+ATTR_ONE_RESULTS:
-   #+BEGIN_SRC emacs-lisp
-   (:left  "<div id=\"id\" class=\"class\">"
-    :right "</div>")
-   #+END_SRC
-
-With that said, here is the source code of ~osta-html~ at commit ~cd43e0b~:
-
-#+BEGIN_SRC emacs-lisp
-;; commit cd43e0bc6d2bf7affcc1fce0b071fa8f3f1978c0
-;; Author: tony <tony.aldon.adm@gmail.com>
-;; Date:   Mon Feb 7 10:51:35 2022 +0100
-
-(defun osta-html (&rest components)
-  ""
-  (let* ((update-tree-comp
-          (lambda (tree comp)
-            (let* ((comp-str (if (stringp comp) comp (number-to-string comp)))
-                   (left (concat (plist-get tree :left) comp-str))
-                   (right (plist-get tree :right)))
-              `(:left ,left :right ,right))))
-         (update-tree-tag
-          (lambda (tree tag new-rest)
-            (let* ((tag-left (plist-get tag :left))
-                   (left (concat (plist-get tree :left) tag-left))
-                   (tag-right (or (plist-get tag :right) ""))
-                   (tree-right (plist-get tree :right))
-                   (right (if new-rest
-                              `(:left ,tag-right :right ,tree-right)
-                            (concat tag-right tree-right))))
-              `(:left ,left :right ,right))))
-         (update-tree-rest
-          (lambda (tree)
-            (let* ((tree-left (plist-get tree :left))
-                   (tree-right-left (plist-get (plist-get tree :right) :left))
-                   (tree-right-right (plist-get (plist-get tree :right) :right))
-                   (left (concat tree-left tree-right-left)))
-              `(:left ,left :right ,tree-right-right))))
-         ;; initialize state
-         (tree '(:left "" :right ""))
-         rest
-         (comps components)
-         (comp (car comps)))
-    (while (or comp (cdr comps))
-      (pcase comp
-        ;; nil component is just ignored
-        ('nil
-         (setq comps (cdr comps))
-         (setq comp (car comps)))
-        ;; string component or an integer component
-        ((or (pred stringp) (pred numberp))
-         (setq tree (funcall update-tree-comp tree comp))
-         (setq comps (cdr comps))
-         (setq comp (car comps)))
-        ;; not a tag component but a list of components like '("foo" "bar")
-        ((and (pred listp) (guard (not (keywordp (car comp)))))
-         (setq comps (append comp (cdr comps)))
-         (setq comp (car comps)))
-        ;; tag component like '(:p "foo") or '(:p/id.class (@ :attr "attr") "foo")
-        ((pred listp)
-         (let ((new-rest (cdr comps)))
-           (seq-let (tag comp-children)
-               (seq-let (tag-kw attr) comp
-                 ;; check if `attr' is of the form '(@ :id "id" :class "class")
-                 (if (and (listp attr) (equal (car attr) '@))
-                     (list (osta-tag tag-kw (cdr attr)) (cddr comp))
-                   (list (osta-tag tag-kw) (cdr comp))))
-             (setq tree (funcall update-tree-tag tree tag new-rest))
-             (when new-rest (push new-rest rest))
-             (setq comps (append comp-children (and new-rest '(:rest))))
-             (setq comp (car comps)))))
-        ;; make the latest list of components added to `rest' the
-        ;; part of `components' to be treated in the next iteration
-        (:rest
-         (setq tree (funcall update-tree-rest tree))
-         (setq comps (pop rest))
-         (setq comp (car comps)))
-        ;; non component object
-        ((and _ obj)
-         (when osta-html-raise-error-p
-           (error "Object '%S' of type '%s' can't be a component in 'osta-html'"
-                  obj (type-of obj)))
-         (setq comps (cdr comps))
-         (setq comp (car comps)))))
-    (concat (plist-get tree :left) (plist-get tree :right))))
 #+END_SRC
 
 * Recursive vs. iterative implementation of jack-html in Elisp
