@@ -82,9 +82,6 @@ Tag content and attributes can be variables:
 ;; "<p id=\"foo\">bar</p>"
 #+END_SRC
 
-What happens if you pass to ~jack-html~ a lisp object that is not a
-component?
-
 If the variable ~jack-html-raise-error-p~ is set to ~nil~, which is the
 default value, ~jack-html~ processes non component object as the empty
 string.
