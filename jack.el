@@ -2,7 +2,53 @@
 ;;
 ;; Copyright (C) 2021-2022 Tony Aldon
 
+;; Author: Tony Aldon <tony.aldon.adm@gmail.com>
+;; Version: 1.0
+;; Package-Requires: ((emacs "26.1"))
+;; Keywords: lisp, html
+;; Homepage: https://github.com/tonyaldon/jack
+
+;; This program is free software: you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 ;;; commentary:
+
+;; `jack' provides the function `jack-html' that takes a data structure
+;; as input representing the HTML tree you want to render and render it
+;; as a string.
+;;
+;; For instance:
+;;
+;;     (jack-html '(:section (:div (:p "foo"))))
+;;     ;; "<section><div><p>foo</p></div></section>"
+;;
+;; HTML attributes are specified in a list starting by the '@' sign
+;;
+;;     (jack-html '(:div (@ :id "id" :class "class" :style "color:red;") "foo"))
+;;     ;; "<div id=\"id\" class=\"class\" style=\"color:red;\">foo</div>"
+;;
+;; In the keyword defining the HTML tag you can use '/' to declare its
+;; 'id' and '.' to declare its classes like this:
+;;
+;;     (jack-html '(:div/id.class-1.class-2
+;;                  (@ :class "class-3" :style "color:red;")
+;;                  "foo"))
+;;     ;; "<div id=\"id\" class=\"class-1 class-2 class-3\" style=\"color:red;\">foo</div>"
+;;
+;; Note that I would have prefered to use '#' for declaring the 'id' but it
+;; has to be escaped in keywords which is ugly.
+;;
+;; More in the docs either in directory 'docs' or at https://jack.tonyaldon.com.
 
 ;;; code:
 
