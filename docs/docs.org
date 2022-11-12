@@ -12,6 +12,9 @@ If you want to read about its implementation, here are two articles:
 - [[#/jack-html-implementation-details/][jack-html implementation details]],
 - [[#/recursive-vs-iterative-implementation-of-jack-html-in-elisp/][Recursive vs. iterative implementation of jack-html in Elisp]].
 
+If you want an example of a website built using ~jack~ you can take a
+look at https://gitlab.com/tonyaldon/dieta/.
+
 If you just want to use it, read on:
 
 To install it put ~jack.el~ file in your load path and require ~jack~
