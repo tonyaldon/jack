@@ -5,7 +5,7 @@
 :ONE_CREATED_AT: [2022-02-10 Thu]
 :END:
 
-~jack~ is a HTML renderer library for Emacs Lisp.
+~jack~ is a HTML generator library for Emacs Lisp.
 
 If you want to read about its implementation, here are two articles:
 
@@ -22,7 +22,7 @@ like this:
 #+END_SRC
 
 ~jack~ provides the function ~jack-html~ that takes a data structure
-as input representing the HTML tree you want to render and render it
+as input representing the HTML tree you want to generate and generates it
 as a string.
 
 For instance:

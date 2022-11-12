@@ -1,4 +1,4 @@
-~jack~ is a HTML renderer library for Emacs Lisp.
+~jack~ is a HTML generator library for Emacs Lisp.
 
 To install it put ~jack.el~ file in your load path and require ~jack~
 like this:
@@ -8,7 +8,7 @@ like this:
 #+END_SRC
 
 ~jack~ provides the function ~jack-html~ that takes a data structure
-as input representing the HTML tree you want to render and render it
+as input representing the HTML tree you want to generate and generates it
 as a string.
 
 For instance:

@@ -1,4 +1,4 @@
-;;; jack.el --- HTML renderer library -*- lexical-binding: t; -*-
+;;; jack.el --- HTML generator library -*- lexical-binding: t; -*-
 ;;
 ;; Copyright (C) 2021-2022 Tony Aldon
 
@@ -24,7 +24,7 @@
 ;;; commentary:
 
 ;; `jack' provides the function `jack-html' that takes a data structure
-;; as input representing the HTML tree you want to render and render it
+;; as input representing the HTML tree you want to generate and generates it
 ;; as a string.
 ;;
 ;; For instance:
@@ -195,7 +195,7 @@ returns
     `(:left ,left :right ,tree-right-right)))
 
 (defun jack-html (&rest components)
-  "Render COMPONENTS as an HTML string.
+  "Generate COMPONENTS as an HTML string.
 
 For instance:
 
