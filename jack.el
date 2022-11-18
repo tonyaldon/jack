@@ -4,7 +4,7 @@
 
 ;; Author: Tony Aldon <tony.aldon.adm@gmail.com>
 ;; Version: 1.0
-;; Package-Requires: ((emacs "26.1"))
+;; Package-Requires: ((emacs "28.1"))
 ;; Keywords: lisp, html
 ;; Homepage: https://github.com/tonyaldon/jack
 
