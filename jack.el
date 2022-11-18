@@ -66,12 +66,12 @@
    s))
 
 (defvar jack-html-raise-error-p nil
-  "When `t', `jack-html' raises an error for non component objects.
+  "When t, `jack-html' raises an error for non component objects.
 
 For instance, a vector like `[a b c]' can't be a component passed
 to `jack-html'.
 
-If `nil', which is the default value, `jack-html' processes non
+If nil, which is the default value, `jack-html' processes non
 component object as the empty string.
 
 For instance,
@@ -134,8 +134,7 @@ and:
 returns
 
   (:left  \"<div id=\"id\" class=\"class\">\"
-   :right \"</div>\")
-"
+   :right \"</div>\")"
   (let ((void-tags '("area" "base" "br" "col" "embed" "hr" "img" "input"   ; https://developer.mozilla.org/en-US/docs/Glossary/Empty_element
                      "keygen" "link" "meta" "param" "source" "track" "wbr")))
     (seq-let (tag id classes) (jack-parse-tag-kw tag-kw)
@@ -172,12 +171,19 @@ returns
             :right ,(concat "</" tag ">")))))))
 
 (defsubst jack--update-tree-comp (tree comp)
+  "Return a new version of TREE.
+COMP is a new (string or integer) component to be added to the tree.
+See `jack-html'."
   (let* ((comp-str (if (stringp comp) comp (number-to-string comp)))
          (left (concat (plist-get tree :left) comp-str))
          (right (plist-get tree :right)))
     `(:left ,left :right ,right)))
 
 (defsubst jack--update-tree-tag (tree tag new-rest)
+  "Return a new version of TREE.
+Information in the plist TAG are added to the tree
+creating a new branch if NEW-REST is non nil.
+See `jack-tag' and `jack-html'."
   (let* ((tag-left (plist-get tag :left))
          (left (concat (plist-get tree :left) tag-left))
          (tag-right (or (plist-get tag :right) ""))
@@ -188,6 +194,7 @@ returns
     `(:left ,left :right ,right)))
 
 (defsubst jack--update-tree-rest (tree)
+  "Return a new version of TREE removing one level in the right branch."
   (let* ((tree-left (plist-get tree :left))
          (tree-right-left (plist-get (plist-get tree :right) :left))
          (tree-right-right (plist-get (plist-get tree :right) :right))
