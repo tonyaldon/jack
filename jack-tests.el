@@ -1,5 +1,6 @@
 ;;; require
 
+(require 'jack)
 (require 'ert)
 
 ;;; utils
