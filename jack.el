@@ -68,7 +68,7 @@
 (defvar jack-html-raise-error-p nil
   "When t, `jack-html' raises an error for non component objects.
 
-For instance, a vector like `[a b c]' can't be a component passed
+For instance, a vector like [a b c] can't be a component passed
 to `jack-html'.
 
 If nil, which is the default value, `jack-html' processes non
@@ -86,7 +86,7 @@ and,
 
 raises the error:
 
-  \"Object '[a b c]' of type 'vector' can't be a component in 'jack-html'\"")
+  \"Object [a b c] of type vector can't be a component in \\='jack-html'\"")
 
 (defun jack-parse-tag-kw (tag-kw)
   "Return a list of (\"tag\" \"id\" \"class\") from a TAG-KW.
@@ -129,7 +129,7 @@ returns
 
 and:
 
-  (jack-tag :div '(:id \"id\" :class \"class\"))
+  (jack-tag :div \\='(:id \"id\" :class \"class\"))
 
 returns
 
@@ -206,7 +206,7 @@ See `jack-tag' and `jack-html'."
 
 For instance:
 
-  (jack-html '(:section (:div (:p \"foo\"))))
+  (jack-html \\='(:section (:div (:p \"foo\"))))
 
 returns
 
@@ -214,15 +214,19 @@ returns
 
 and:
 
-  (jack-html '(:div/id.class-1.class-2
+  (jack-html \\='(:div/id.class-1.class-2
                (@ :class \"class-3\" :style \"color:red;\")
                \"foo\"))
 
-returns
+returns (formatted for better reading in docstring)
 
-  \"<div id=\\\"id\\\" class=\\\"class-1 class-2 class-3\\\" style=\\\"color:red;\\\">foo</div>\"
+  \"<div id=\\\"id\\\"
+         class=\\\"class-1 class-2 class-3\\\"
+         style=\\\"color:red;\\\">
+      foo
+    </div>\"
 
-Note that when `jack-html-raise-error-p' is set to `t',
+Note that when `jack-html-raise-error-p' is set to t,
 `jack-html' raises an error when we pass it a non component object."
 
   (let* (;; initialize state
