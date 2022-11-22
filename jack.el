@@ -52,6 +52,8 @@
 
 ;;; Code:
 
+(eval-when-compile (require 'subr-x))
+
 (defun jack--escape (s)
   "Return the string S with some caracters escaped.
 `<', `>' and `&' are escaped."
