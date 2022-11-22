@@ -5,14 +5,14 @@
 
 ;;; utils
 
-(ert-deftest jack-escape-test ()
-  (should (string= (jack-escape "<") "&lt;"))
-  (should (string= (jack-escape ">") "&gt;"))
-  (should (string= (jack-escape "&") "&amp;"))
-  (should (string= (jack-escape "\"") "&quot;"))
-  (should (string= (jack-escape "'") "&apos;"))
-  (should (string= (jack-escape "regular text") "regular text"))
-  (should (string= (jack-escape "<...>...&...\"...'") "&lt;...&gt;...&amp;...&quot;...&apos;")))
+(ert-deftest jack--escape-test ()
+  (should (string= (jack--escape "<") "&lt;"))
+  (should (string= (jack--escape ">") "&gt;"))
+  (should (string= (jack--escape "&") "&amp;"))
+  (should (string= (jack--escape "\"") "&quot;"))
+  (should (string= (jack--escape "'") "&apos;"))
+  (should (string= (jack--escape "regular text") "regular text"))
+  (should (string= (jack--escape "<...>...&...\"...'") "&lt;...&gt;...&amp;...&quot;...&apos;")))
 
 (ert-deftest jack-parse-tag-kw-test ()
   (should-error (jack-parse-tag-kw "string-is-not-a-valid-tag-keyword"))

@@ -52,7 +52,7 @@
 
 ;;; Code:
 
-(defun jack-escape (s)
+(defun jack--escape (s)
   "Return the string S with some caracters escaped.
 `<', `>' and `&' are escaped."
   (replace-regexp-in-string
@@ -146,7 +146,7 @@ returns
                     ('t (concat attr "=\""  attr "\""))
                     ('nil nil)
                     ((and _ value)
-                     (concat attr "=\"" (jack-escape value) "\""))))))
+                     (concat attr "=\"" (jack--escape value) "\""))))))
              (pairs (seq-partition attributes 2))
              ;; we merge classes from `tag-kw' and `attributes' and add it to the pairs
              (-pairs (if classes
