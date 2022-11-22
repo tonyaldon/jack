@@ -55,7 +55,7 @@
 (eval-when-compile (require 'subr-x))
 
 (defun jack--escape (s)
-  "Return the string S with some caracters escaped.
+  "Return the string S with some characters escaped.
 `<', `>' and `&' are escaped."
   (replace-regexp-in-string
    "\\(<\\)\\|\\(>\\)\\|\\(&\\)\\|\\(\"\\)\\|\\('\\)"
