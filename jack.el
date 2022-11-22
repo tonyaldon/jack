@@ -21,7 +21,7 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-;;; commentary:
+;;; Commentary:
 
 ;; `jack' provides the function `jack-html' that takes a data structure
 ;; as input representing the HTML tree you want to generate and generates it
@@ -50,7 +50,7 @@
 ;;
 ;; More in the docs either in directory 'docs' or at https://jack.tonyaldon.com.
 
-;;; code:
+;;; Code:
 
 (defun jack-escape (s)
   "Return the string S with some caracters escaped.
