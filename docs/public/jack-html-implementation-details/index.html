@@ -1,864 +1,514 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <link rel="stylesheet" type="text/css" href="/one.css" />
-  </head>
-  <body>
-    <div class="container">
-      <div>
-        <a href="/">⇽ Go to Jack</a>
-        <h1>jack-html implementation details</h1>
-        <div>
-          <p><u>created at 2022-02-08 | updated at 2022-11-05</u></p>
-        </div>
+<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1" /><link rel="stylesheet" type="text/css" href="/one.css" /><title>jack-html implementation details</title></head><body><div class="header"><a href="/">Jack</a></div><div class="content"><div class="title"><h1>jack-html implementation details</h1></div><div></div>
+<div><h2 id="one-f42616f106">Summary</h2><div><p>In this post, we show how <code class="one-hl one-hl-inline">jack-html</code> processes the following <b>component</b>
+</p>
 
-        <div>
-          <h2>Summary</h2>
-          <div>
-            <p>
-              In this post, we show how
-              <code class="osta-hl osta-hl-inline">jack-html</code> processes
-              the following <b>component</b>
-            </p>
+<pre><code class="one-hl one-hl-block">'(<span class="one-hl-ta-colon-keyword">:div/foo.bar</span>
+  <span class="one-hl-string">"A"</span>
+  (<span class="one-hl-ta-colon-keyword">:p</span> (@ <span class="one-hl-ta-colon-keyword">:class</span> <span class="one-hl-string">"baz"</span>) <span class="one-hl-string">"B"</span> (<span class="one-hl-ta-colon-keyword">:hr</span>) <span class="one-hl-string">"C"</span>)
+  (<span class="one-hl-string">"D"</span> <span class="one-hl-string">"E"</span> <span class="one-hl-string">"F"</span>))</code></pre>
 
-            <pre><code class="osta-hl osta-hl-block">'(<span class="osta-hl-ta-colon-keyword">:div/foo.bar</span>
-  <span class="osta-hl-string">"A"</span>
-  (<span class="osta-hl-ta-colon-keyword">:p</span> (@ <span class="osta-hl-ta-colon-keyword">:class</span> <span class="osta-hl-string">"baz"</span>) <span class="osta-hl-string">"B"</span> (<span class="osta-hl-ta-colon-keyword">:hr</span>) <span class="osta-hl-string">"C"</span>)
-  (<span class="osta-hl-string">"D"</span> <span class="osta-hl-string">"E"</span> <span class="osta-hl-string">"F"</span>))</code></pre>
+<p>in order to return the following string
+</p>
 
-            <p>in order to return the following string</p>
+<pre><code class="one-hl one-hl-block"><span class="one-hl-string">"&lt;div id=\"foo\" class=\"bar\"&gt;A&lt;p class=\"baz\"&gt;B&lt;hr /&gt;C&lt;/p&gt;DEF&lt;/div&gt;"</span></code></pre>
 
-            <pre><code class="osta-hl osta-hl-block"><span class="osta-hl-string">"&lt;div id=\"foo\" class=\"bar\"&gt;A&lt;p class=\"baz\"&gt;B&lt;hr /&gt;C&lt;/p&gt;DEF&lt;/div&gt;"</span></code></pre>
+<p>that we can use to produce this following html snippet:
+</p>
 
-            <p>that we can use to produce this following html snippet:</p>
-
-            <pre><code class="osta-hl osta-hl-block">&lt;<span class="osta-hl-function-name">div</span> <span class="osta-hl-variable-name">id</span>=<span class="osta-hl-string">"foo"</span> <span class="osta-hl-variable-name">class</span>=<span class="osta-hl-string">"bar"</span>&gt;
+<pre><code class="one-hl one-hl-block">&lt;<span class="one-hl-function-name">div</span> <span class="one-hl-variable-name">id</span>=<span class="one-hl-string">"foo"</span> <span class="one-hl-variable-name">class</span>=<span class="one-hl-string">"bar"</span>&gt;
   A
-  &lt;<span class="osta-hl-function-name">p</span> <span class="osta-hl-variable-name">class</span>=<span class="osta-hl-string">"baz"</span>&gt;B&lt;<span class="osta-hl-function-name">hr</span> /&gt;C&lt;/<span class="osta-hl-function-name">p</span>&gt;
+  &lt;<span class="one-hl-function-name">p</span> <span class="one-hl-variable-name">class</span>=<span class="one-hl-string">"baz"</span>&gt;B&lt;<span class="one-hl-function-name">hr</span> /&gt;C&lt;/<span class="one-hl-function-name">p</span>&gt;
   DEF
-&lt;/<span class="osta-hl-function-name">div</span>&gt;</code></pre>
-          </div>
-        </div>
-
-        <div>
-          <h2>Description of the program</h2>
-          <div>
-            <p>
-              In this section we call
-              <code class="osta-hl osta-hl-inline">input-tree</code> the data
-              structure <code class="osta-hl osta-hl-inline">jack-html</code>
-              receives as input.
-            </p>
-
-            <p>For instance, in the form</p>
-
-            <pre><code class="osta-hl osta-hl-block">(jack-html '(<span class="osta-hl-ta-colon-keyword">:div.foo</span> (<span class="osta-hl-ta-colon-keyword">:p</span> <span class="osta-hl-string">"bar-1"</span> (<span class="osta-hl-ta-colon-keyword">:span</span> <span class="osta-hl-string">"baz"</span>) <span class="osta-hl-string">"bar-2"</span>)))</code></pre>
-
-            <p>the data structure</p>
-
-            <pre><code class="osta-hl osta-hl-block">'(<span class="osta-hl-ta-colon-keyword">:div.foo</span> (<span class="osta-hl-ta-colon-keyword">:p</span> <span class="osta-hl-string">"bar-1"</span> (<span class="osta-hl-ta-colon-keyword">:span</span> <span class="osta-hl-string">"baz"</span>) <span class="osta-hl-string">"bar-2"</span>))</code></pre>
-
-            <p>
-              is the <code class="osta-hl osta-hl-inline">input-tree</code>.
-            </p>
-
-            <p>With that said, let&apos;s describe our program.</p>
-
-            <p>
-              While traversing
-              <code class="osta-hl osta-hl-inline">input-tree</code> (<a
-                href="https://en.wikipedia.org/wiki/Depth-first_search"
-                >DFS</a
-              >
-              algorithm), we builds a tree containing a left part and a right
-              part that represents the html string to be returned at the end of
-              the traversal.
-            </p>
-
-            <p>
-              While the left part of this tree is always a string, the right
-              part can grow recursively by dividing it into two parts (left and
-              right).
-            </p>
-
-            <p>
-              In the following example, we can see the successive states of the
-              this tree when
-              <code class="osta-hl osta-hl-inline">input-tree</code> is
-              <code class="osta-hl osta-hl-inline"
-                >&apos;(:div.foo (:p &quot;bar-1&quot; (:span &quot;baz&quot;)
-                &quot;bar-2&quot;))</code
-              >:
-            </p>
-
-            <pre><code class="osta-hl osta-hl-block">(<span class="osta-hl-ta-colon-keyword">:left</span> <span class="osta-hl-string">""</span>
- <span class="osta-hl-ta-colon-keyword">:right</span> <span class="osta-hl-string">""</span>)
-
-(<span class="osta-hl-ta-colon-keyword">:left</span> <span class="osta-hl-string">"&lt;div class=\"foo\"&gt;"</span>
- <span class="osta-hl-ta-colon-keyword">:right</span> <span class="osta-hl-string">"&lt;/div&gt;"</span>)
-
-(<span class="osta-hl-ta-colon-keyword">:left</span> <span class="osta-hl-string">"&lt;div class=\"foo\"&gt;&lt;p&gt;"</span>
- <span class="osta-hl-ta-colon-keyword">:right</span> <span class="osta-hl-string">"&lt;/p&gt;&lt;/div&gt;"</span>)
-
-(<span class="osta-hl-ta-colon-keyword">:left</span> <span class="osta-hl-string">"&lt;div class=\"foo\"&gt;&lt;p&gt;bar-1"</span>
- <span class="osta-hl-ta-colon-keyword">:right</span> <span class="osta-hl-string">"&lt;/p&gt;&lt;/div&gt;"</span>)
-
-(<span class="osta-hl-ta-colon-keyword">:left</span> <span class="osta-hl-string">"&lt;div class=\"foo\"&gt;&lt;p&gt;bar-1&lt;span&gt;"</span>
- <span class="osta-hl-ta-colon-keyword">:right</span> (<span class="osta-hl-ta-colon-keyword">:left</span> <span class="osta-hl-string">"&lt;/span&gt;"</span>
-         <span class="osta-hl-ta-colon-keyword">:right</span> <span class="osta-hl-string">"&lt;/p&gt;&lt;/div&gt;"</span>))
-
-(<span class="osta-hl-ta-colon-keyword">:left</span> <span class="osta-hl-string">"&lt;div class=\"foo\"&gt;&lt;p&gt;bar-1&lt;span&gt;baz"</span>
- <span class="osta-hl-ta-colon-keyword">:right</span> (<span class="osta-hl-ta-colon-keyword">:left</span> <span class="osta-hl-string">"&lt;/span&gt;"</span>
-         <span class="osta-hl-ta-colon-keyword">:right</span> <span class="osta-hl-string">"&lt;/p&gt;&lt;/div&gt;"</span>))
-
-(<span class="osta-hl-ta-colon-keyword">:left</span> <span class="osta-hl-string">"&lt;div class=\"foo\"&gt;&lt;p&gt;bar-1&lt;span&gt;baz&lt;/span&gt;"</span>
- <span class="osta-hl-ta-colon-keyword">:right</span> <span class="osta-hl-string">"&lt;/p&gt;&lt;/div&gt;"</span>)
-
-(<span class="osta-hl-ta-colon-keyword">:left</span> <span class="osta-hl-string">"&lt;div class=\"foo\"&gt;&lt;p&gt;bar-1&lt;span&gt;baz&lt;/span&gt;bar-2"</span>
- <span class="osta-hl-ta-colon-keyword">:right</span> <span class="osta-hl-string">"&lt;/p&gt;&lt;/div&gt;"</span>)</code></pre>
-
-            <p>
-              When we have completly traversed
-              <code class="osta-hl osta-hl-inline">input-tree</code>, we return
-              the concatenation of the left part and the right part of
-              <code class="osta-hl osta-hl-inline">tree</code>.
-            </p>
-
-            <p>
-              Specifically, at the beginning of the programs we set the
-              variables <code class="osta-hl osta-hl-inline">tree</code>,
-              <code class="osta-hl osta-hl-inline">rest</code>,
-              <code class="osta-hl osta-hl-inline">comps</code> and
-              <code class="osta-hl osta-hl-inline">comp</code> that define the
-              state of the program.
-            </p>
-
-            <p>
-              <code class="osta-hl osta-hl-inline">tree</code> is the tree we
-              build a each iteration that contains the elements needed to
-              construct the final returned value.
-            </p>
-
-            <p>
-              <code class="osta-hl osta-hl-inline">rest</code> is the stack that
-              contains the parts of
-              <code class="osta-hl osta-hl-inline">input-tree</code> left out to
-              be processed later.
-            </p>
-
-            <p>
-              <code class="osta-hl osta-hl-inline">comps</code> is the current
-              list of components being treated. Components in
-              <code class="osta-hl osta-hl-inline">comps</code> are at the same
-              level in <code class="osta-hl osta-hl-inline">input-tree</code>.
-            </p>
-
-            <p>
-              <code class="osta-hl osta-hl-inline">comp</code> is the current
-              component (always equal to the first element of
-              <code class="osta-hl osta-hl-inline">comps</code>) that determines
-              how we must update the state (<code class="osta-hl osta-hl-inline"
-                >tree</code
-              >, <code class="osta-hl osta-hl-inline">rest</code> and
-              <code class="osta-hl osta-hl-inline">comps</code>) of the program
-              at each iteration:
-            </p>
-
-            <ol>
-              <li>
-                <p>
-                  when <code class="osta-hl osta-hl-inline">comp</code> is
-                  <code class="osta-hl osta-hl-inline">nil</code>, we ignore
-                  this component and follow the traversal with the
-                  <code class="osta-hl osta-hl-inline">cdr</code> of
-                  <code class="osta-hl osta-hl-inline">comps</code>,
-                </p>
-              </li>
-              <li>
-                <p>
-                  when <code class="osta-hl osta-hl-inline">comp</code> is a
-                  string or a number, we update
-                  <code class="osta-hl osta-hl-inline">tree</code> by appending
-                  <code class="osta-hl osta-hl-inline">comp</code> (as a string)
-                  to the left part of
-                  <code class="osta-hl osta-hl-inline">tree</code>, the right
-                  part staying the same,
-                </p>
-              </li>
-              <li>
-                <p>
-                  when <code class="osta-hl osta-hl-inline">comp</code> is a
-                  list of components we put them at the same level of the
-                  <code class="osta-hl osta-hl-inline">cdr</code> of
-                  <code class="osta-hl osta-hl-inline">comps</code>,
-                  specifically we set
-                  <code class="osta-hl osta-hl-inline">comps</code> to be
-                  <code class="osta-hl osta-hl-inline"
-                    >(append comp (cdr comps))</code
-                  >,
-                </p>
-              </li>
-              <li>
-                <p>
-                  when <code class="osta-hl osta-hl-inline">comp</code> is a tag
-                  component, two cases must be distinguished according to the
-                  value of
-                  <code class="osta-hl osta-hl-inline">(cdr comps)</code>:
-                </p>
-                <ol>
-                  <li>
-                    <p>
-                      if
-                      <code class="osta-hl osta-hl-inline">(cdr comps)</code> is
-                      non-nil:
-                    </p>
-                    <ul>
-                      <li>
-                        <p>
-                          we update
-                          <code class="osta-hl osta-hl-inline">tree</code>
-                          according to the value returned by
-                          <code class="osta-hl osta-hl-inline">jack-tag</code>
-                          and by dividing the right part of
-                          <code class="osta-hl osta-hl-inline">tree</code> into
-                          two parts,
-                        </p>
-                      </li>
-                      <li>
-                        <p>
-                          we push the components
-                          <code class="osta-hl osta-hl-inline"
-                            >(cdr comps)</code
-                          >
-                          on the stack
-                          <code class="osta-hl osta-hl-inline">rest</code> and,
-                        </p>
-                      </li>
-                      <li>
-                        <p>
-                          the components to be treated in the next iteration are
-                          the children of the tag component
-                          <code class="osta-hl osta-hl-inline">comp</code>
-                          (which can be either
-                          <code class="osta-hl osta-hl-inline">(cdr comp)</code>
-                          or
-                          <code class="osta-hl osta-hl-inline">(cddr comp)</code
-                          >), so
-                          <code class="osta-hl osta-hl-inline">comps</code>
-                          should be set to contains those children only, but as
-                          we need to remember that once those children has been
-                          treated we have to treat the element added to the
-                          stack
-                          <code class="osta-hl osta-hl-inline">rest</code>, we
-                          also append to
-                          <code class="osta-hl osta-hl-inline">comps</code> the
-                          keyword
-                          <code class="osta-hl osta-hl-inline">:rest</code>,
-                        </p>
-                      </li>
-                    </ul>
-                  </li>
-                  <li>
-                    <p>
-                      if
-                      <code class="osta-hl osta-hl-inline">(cdr comps)</code> is
-                      nil:
-                    </p>
-                    <ul>
-                      <li>
-                        <p>
-                          it means that there is no part of
-                          <code class="osta-hl osta-hl-inline">input-tree</code>
-                          to be added to the stack
-                          <code class="osta-hl osta-hl-inline">rest</code> at
-                          this iteration, so
-                          <code class="osta-hl osta-hl-inline">rest</code> stays
-                          unchanged,
-                        </p>
-                      </li>
-                      <li>
-                        <p>
-                          we just update
-                          <code class="osta-hl osta-hl-inline">tree</code>
-                          according to the value returned by
-                          <code class="osta-hl osta-hl-inline">jack-tag</code>
-                          (without dividing the right part of
-                          <code class="osta-hl osta-hl-inline">tree</code>) and,
-                        </p>
-                      </li>
-                      <li>
-                        <p>
-                          the components to be treated in the next iteration are
-                          the children of the tag component
-                          <code class="osta-hl osta-hl-inline">comp</code>
-                          (which can be either
-                          <code class="osta-hl osta-hl-inline">(cdr comp)</code>
-                          or
-                          <code class="osta-hl osta-hl-inline">(cddr comp)</code
-                          >), so
-                          <code class="osta-hl osta-hl-inline">comps</code> is
-                          set to be those children,
-                        </p>
-                      </li>
-                    </ul>
-                  </li>
-                </ol>
-              </li>
-              <li>
-                <p>
-                  when <code class="osta-hl osta-hl-inline">comp</code> is the
-                  keyword <code class="osta-hl osta-hl-inline">:rest</code>,
-                  that means we have completed the traversal of a part of
-                  <code class="osta-hl osta-hl-inline">input-tree</code>, so:
-                </p>
-                <ol>
-                  <li>
-                    <p>
-                      we update
-                      <code class="osta-hl osta-hl-inline">tree</code>
-                      accordingly by appending the left part of the right part
-                      of <code class="osta-hl osta-hl-inline">tree</code> to its
-                      left part, and we set its right part to be the right part
-                      of the right part of
-                      <code class="osta-hl osta-hl-inline">tree</code>,
-                    </p>
-                  </li>
-                  <li>
-                    <p>
-                      now we have to treat the most recently added list of
-                      components in the stack
-                      <code class="osta-hl osta-hl-inline">rest</code>. To do
-                      so, we set
-                      <code class="osta-hl osta-hl-inline">comps</code> to be
-                      the first element of
-                      <code class="osta-hl osta-hl-inline">rest</code> and
-                      remove that first element from
-                      <code class="osta-hl osta-hl-inline">rest</code> (this can
-                      be done like this
-                      <code class="osta-hl osta-hl-inline"
-                        >(setq comps (pop rest))</code
-                      >),
-                    </p>
-                  </li>
-                </ol>
-              </li>
-              <li>
-                <p>
-                  when <code class="osta-hl osta-hl-inline">comp</code> is any
-                  other object, we skip it or we raise an error depending on the
-                  variable
-                  <code class="osta-hl osta-hl-inline"
-                    >jack-html-raise-error-p</code
-                  >.
-                </p>
-              </li>
-            </ol>
-
-            <p>
-              Finally, when <code class="osta-hl osta-hl-inline">comp</code> is
-              <code class="osta-hl osta-hl-inline">nil</code> and
-              <code class="osta-hl osta-hl-inline">(cdr comps)</code> too, it
-              means that we have completly traversed
-              <code class="osta-hl osta-hl-inline">input-tree</code>, no more
-              iterations are needed and we return the concatenation of the left
-              part and the right part of
-              <code class="osta-hl osta-hl-inline">tree</code>.
-            </p>
-          </div>
-        </div>
-
-        <div>
-          <h2>Running the program step by step</h2>
-          <div>
-            <p>
-              Let&apos;s go through each iteration that the following evaluation
-              implies by printing out and commenting the successive states of
-              our program:
-            </p>
-
-            <pre><code class="osta-hl osta-hl-block">(jack-html
- '(<span class="osta-hl-ta-colon-keyword">:div/foo.bar</span>
-   <span class="osta-hl-string">"A"</span>
-   (<span class="osta-hl-ta-colon-keyword">:p</span> (@ <span class="osta-hl-ta-colon-keyword">:class</span> <span class="osta-hl-string">"baz"</span>) <span class="osta-hl-string">"B"</span> (<span class="osta-hl-ta-colon-keyword">:hr</span>) <span class="osta-hl-string">"C"</span>)
-   (<span class="osta-hl-string">"D"</span> <span class="osta-hl-string">"E"</span> <span class="osta-hl-string">"F"</span>)))</code></pre>
-
-            <p>
-              <code class="osta-hl osta-hl-inline">input-tree</code>,
-              <code class="osta-hl osta-hl-inline">tree</code>,
-              <code class="osta-hl osta-hl-inline">rest</code>,
-              <code class="osta-hl osta-hl-inline">comps</code> and
-              <code class="osta-hl osta-hl-inline">comp</code> have the same
-              meaning as in the previous section.
-            </p>
-
-            <p>
-              And, each state of the program is representing as a plist where:
-            </p>
-
-            <ul>
-              <li>
-                <p>
-                  <code class="osta-hl osta-hl-inline">:tree</code> hold the
-                  value of <code class="osta-hl osta-hl-inline">tree</code>,
-                </p>
-              </li>
-              <li>
-                <p>
-                  <code class="osta-hl osta-hl-inline">:rest</code> the value of
-                  <code class="osta-hl osta-hl-inline">rest</code>,
-                </p>
-              </li>
-              <li>
-                <p>
-                  <code class="osta-hl osta-hl-inline">:comps</code> the value
-                  of <code class="osta-hl osta-hl-inline">comps</code> and,
-                </p>
-              </li>
-              <li>
-                <p>
-                  <code class="osta-hl osta-hl-inline">:comp</code> the value of
-                  <code class="osta-hl osta-hl-inline">comp</code>.
-                </p>
-              </li>
-            </ul>
-
-            <p>
-              First the state is initialized like this (before entering in the
-              <code class="osta-hl osta-hl-inline">while</code>
-              loop):
-            </p>
-
-            <pre><code class="osta-hl osta-hl-block">(<span class="osta-hl-ta-colon-keyword">:tree</span> (<span class="osta-hl-ta-colon-keyword">:left</span> <span class="osta-hl-string">""</span>
-        <span class="osta-hl-ta-colon-keyword">:right</span> <span class="osta-hl-string">""</span>)
- <span class="osta-hl-ta-colon-keyword">:rest</span> nil
- <span class="osta-hl-ta-colon-keyword">:comps</span> ((<span class="osta-hl-ta-colon-keyword">:div/foo.bar</span>
-          <span class="osta-hl-string">"A"</span>
-          (<span class="osta-hl-ta-colon-keyword">:p</span> (@ <span class="osta-hl-ta-colon-keyword">:class</span> <span class="osta-hl-string">"baz"</span>) <span class="osta-hl-string">"B"</span> (<span class="osta-hl-ta-colon-keyword">:hr</span>) <span class="osta-hl-string">"C"</span>)
-          (<span class="osta-hl-string">"D"</span> <span class="osta-hl-string">"E"</span> <span class="osta-hl-string">"F"</span>)))
- <span class="osta-hl-ta-colon-keyword">:comp</span> (<span class="osta-hl-ta-colon-keyword">:div/foo.bar</span>
-        <span class="osta-hl-string">"A"</span>
-        (<span class="osta-hl-ta-colon-keyword">:p</span> (@ <span class="osta-hl-ta-colon-keyword">:class</span> <span class="osta-hl-string">"baz"</span>) <span class="osta-hl-string">"B"</span> (<span class="osta-hl-ta-colon-keyword">:hr</span>) <span class="osta-hl-string">"C"</span>)
-        (<span class="osta-hl-string">"D"</span> <span class="osta-hl-string">"E"</span> <span class="osta-hl-string">"F"</span>)))</code></pre>
-
-            <p>
-              As <code class="osta-hl osta-hl-inline">comp</code> (equal to
-              <code class="osta-hl osta-hl-inline">(:div/foo.bar ...)</code>) is
-              a tag component, and is the only component in
-              <code class="osta-hl osta-hl-inline">comps</code>:
-            </p>
-
-            <ol>
-              <li>
-                <p>
-                  <code class="osta-hl osta-hl-inline">tree</code> is updated
-                  with the left part and right part of the tag returned by
-                  <code class="osta-hl osta-hl-inline">jack-tag</code> function,
-                </p>
-              </li>
-              <li>
-                <p>
-                  <code class="osta-hl osta-hl-inline">rest</code> stack stays
-                  <code class="osta-hl osta-hl-inline">nil</code>,
-                </p>
-              </li>
-              <li>
-                <p>
-                  the components of
-                  <code class="osta-hl osta-hl-inline">input-tree</code> that
-                  should be treated in the next iteration are the children of
-                  the tag <code class="osta-hl osta-hl-inline">comp</code>,
-                  which are the components at the same level of the string
-                  component
-                  <code class="osta-hl osta-hl-inline">&quot;A&quot;</code>,
-                  specifically, the new value of
-                  <code class="osta-hl osta-hl-inline">comps</code> is
-                  <code class="osta-hl osta-hl-inline">cdr</code> of the current
-                  <code class="osta-hl osta-hl-inline">comp</code>,
-                </p>
-              </li>
-            </ol>
-
-            <p>so the new state is:</p>
-
-            <pre><code class="osta-hl osta-hl-block">(<span class="osta-hl-ta-colon-keyword">:tree</span> (<span class="osta-hl-ta-colon-keyword">:left</span> <span class="osta-hl-string">"&lt;div id=\"foo\" class=\"bar\"&gt;"</span>
-        <span class="osta-hl-ta-colon-keyword">:right</span> <span class="osta-hl-string">"&lt;/div&gt;"</span>)
- <span class="osta-hl-ta-colon-keyword">:rest</span> nil
- <span class="osta-hl-ta-colon-keyword">:comps</span> (<span class="osta-hl-string">"A"</span>
-         (<span class="osta-hl-ta-colon-keyword">:p</span> (@ <span class="osta-hl-ta-colon-keyword">:class</span> <span class="osta-hl-string">"baz"</span>) <span class="osta-hl-string">"B"</span> (<span class="osta-hl-ta-colon-keyword">:hr</span>) <span class="osta-hl-string">"C"</span>)
-         (<span class="osta-hl-string">"D"</span> <span class="osta-hl-string">"E"</span> <span class="osta-hl-string">"F"</span>))
- <span class="osta-hl-ta-colon-keyword">:comp</span> <span class="osta-hl-string">"A"</span>)</code></pre>
-
-            <p>
-              As <code class="osta-hl osta-hl-inline">comp</code> (equal to
-              <code class="osta-hl osta-hl-inline">&quot;A&quot;</code>) is a
-              string component,
-            </p>
-
-            <ol>
-              <li>
-                <p>
-                  we append
-                  <code class="osta-hl osta-hl-inline">&quot;A&quot;</code> to
-                  the left part of
-                  <code class="osta-hl osta-hl-inline">tree</code>,
-                </p>
-              </li>
-              <li>
-                <p>
-                  and we iterate on the
-                  <code class="osta-hl osta-hl-inline">cdr</code> of the current
-                  <code class="osta-hl osta-hl-inline">comps</code> (it means on
-                  the next components at the same level of
-                  <code class="osta-hl osta-hl-inline">&quot;A&quot;</code>
-                  component),
-                </p>
-              </li>
-            </ol>
-
-            <p>so the new state is:</p>
-
-            <pre><code class="osta-hl osta-hl-block">(<span class="osta-hl-ta-colon-keyword">:tree</span> (<span class="osta-hl-ta-colon-keyword">:left</span> <span class="osta-hl-string">"&lt;div id=\"foo\" class=\"bar\"&gt;A"</span>
-        <span class="osta-hl-ta-colon-keyword">:right</span> <span class="osta-hl-string">"&lt;/div&gt;"</span>)
- <span class="osta-hl-ta-colon-keyword">:rest</span> nil
- <span class="osta-hl-ta-colon-keyword">:comps</span> ((<span class="osta-hl-ta-colon-keyword">:p</span> (@ <span class="osta-hl-ta-colon-keyword">:class</span> <span class="osta-hl-string">"baz"</span>) <span class="osta-hl-string">"B"</span> (<span class="osta-hl-ta-colon-keyword">:hr</span>) <span class="osta-hl-string">"C"</span>)
-         (<span class="osta-hl-string">"D"</span> <span class="osta-hl-string">"E"</span> <span class="osta-hl-string">"F"</span>))
- <span class="osta-hl-ta-colon-keyword">:comp</span> (<span class="osta-hl-ta-colon-keyword">:p</span> (@ <span class="osta-hl-ta-colon-keyword">:class</span> <span class="osta-hl-string">"baz"</span>) <span class="osta-hl-string">"B"</span> (<span class="osta-hl-ta-colon-keyword">:hr</span>) <span class="osta-hl-string">"C"</span>))</code></pre>
-
-            <p>
-              As <code class="osta-hl osta-hl-inline">comp</code> (equal to
-              <code class="osta-hl osta-hl-inline"
-                >(:p (@ :class &quot;baz&quot;) ...)</code
-              >) is a tag component but not the only components in
-              <code class="osta-hl osta-hl-inline">comps</code>:
-            </p>
-
-            <ol>
-              <li>
-                <p>
-                  <code class="osta-hl osta-hl-inline">tree</code> is updated
-                  with the left part being the concatenation of its current left
-                  part and the left part of the tag returned by
-                  <code class="osta-hl osta-hl-inline">jack-tag</code>, and the
-                  right part is a subtree with its left part being the right
-                  part of the tag return by
-                  <code class="osta-hl osta-hl-inline">jack-tag</code> and the
-                  right part being its current right part,
-                </p>
-              </li>
-              <li>
-                <p>
-                  we push the <code class="osta-hl osta-hl-inline">cdr</code> of
-                  <code class="osta-hl osta-hl-inline">comps</code> to the stack
-                  <code class="osta-hl osta-hl-inline">rest</code> in order to
-                  treat it after,
-                </p>
-              </li>
-              <li>
-                <p>
-                  the components to be treated in the next iteration are the
-                  children of the tag component
-                  <code class="osta-hl osta-hl-inline">comp</code> (which are
-                  the components at the same level of the string component
-                  <code class="osta-hl osta-hl-inline">&quot;B&quot;</code>), so
-                  <code class="osta-hl osta-hl-inline">comps</code> should be
-                  set to contains those children only, but as we need to
-                  remember that once those children has been treated we have to
-                  treat the element added to the stack
-                  <code class="osta-hl osta-hl-inline">rest</code>, we also
-                  append to
-                  <code class="osta-hl osta-hl-inline">comps</code> the keyword
-                  <code class="osta-hl osta-hl-inline">:rest</code>,
-                </p>
-              </li>
-            </ol>
-
-            <p>so the new state is:</p>
-
-            <pre><code class="osta-hl osta-hl-block">(<span class="osta-hl-ta-colon-keyword">:tree</span> (<span class="osta-hl-ta-colon-keyword">:left</span> <span class="osta-hl-string">"&lt;div id=\"foo\" class=\"bar\"&gt;A&lt;p class=\"baz\"&gt;"</span>
-        <span class="osta-hl-ta-colon-keyword">:right</span> (<span class="osta-hl-ta-colon-keyword">:left</span> <span class="osta-hl-string">"&lt;/p&gt;"</span>
-                <span class="osta-hl-ta-colon-keyword">:right</span> <span class="osta-hl-string">"&lt;/div&gt;"</span>))
- <span class="osta-hl-ta-colon-keyword">:rest</span> (((<span class="osta-hl-string">"D"</span> <span class="osta-hl-string">"E"</span> <span class="osta-hl-string">"F"</span>)))
- <span class="osta-hl-ta-colon-keyword">:comps</span> (<span class="osta-hl-string">"B"</span> (<span class="osta-hl-ta-colon-keyword">:hr</span>) <span class="osta-hl-string">"C"</span> <span class="osta-hl-ta-colon-keyword">:rest</span>)
- <span class="osta-hl-ta-colon-keyword">:comp</span> <span class="osta-hl-string">"B"</span>)</code></pre>
-
-            <p>
-              As <code class="osta-hl osta-hl-inline">comp</code> (equal to
-              <code class="osta-hl osta-hl-inline">&quot;B&quot;</code>) is a
-              string component, we do the same thing we did before for the
-              string component
-              <code class="osta-hl osta-hl-inline">&quot;A&quot;</code> (note
-              that the right part of
-              <code class="osta-hl osta-hl-inline">tree</code> and
-              <code class="osta-hl osta-hl-inline">rest</code> are unchanged).
-            </p>
-
-            <p>So the new state is:</p>
-
-            <pre><code class="osta-hl osta-hl-block">(<span class="osta-hl-ta-colon-keyword">:tree</span> (<span class="osta-hl-ta-colon-keyword">:left</span> <span class="osta-hl-string">"&lt;div id=\"foo\" class=\"bar\"&gt;A&lt;p class=\"baz\"&gt;B"</span>
-        <span class="osta-hl-ta-colon-keyword">:right</span> (<span class="osta-hl-ta-colon-keyword">:left</span> <span class="osta-hl-string">"&lt;/p&gt;"</span>
-                <span class="osta-hl-ta-colon-keyword">:right</span> <span class="osta-hl-string">"&lt;/div&gt;"</span>))
- <span class="osta-hl-ta-colon-keyword">:rest</span> (((<span class="osta-hl-string">"D"</span> <span class="osta-hl-string">"E"</span> <span class="osta-hl-string">"F"</span>)))
- <span class="osta-hl-ta-colon-keyword">:comps</span> ((<span class="osta-hl-ta-colon-keyword">:hr</span>) <span class="osta-hl-string">"C"</span> <span class="osta-hl-ta-colon-keyword">:rest</span>)
- <span class="osta-hl-ta-colon-keyword">:comp</span> (<span class="osta-hl-ta-colon-keyword">:hr</span>))</code></pre>
-
-            <p>
-              As <code class="osta-hl osta-hl-inline">comp</code> (equal to
-              <code class="osta-hl osta-hl-inline">(:hr)</code>) is a tag
-              component but not the only components in
-              <code class="osta-hl osta-hl-inline">comps</code>:
-            </p>
-
-            <ol>
-              <li>
-                <p>
-                  <code class="osta-hl osta-hl-inline">tree</code> is updated
-                  with the left part being the concatenation of its current left
-                  part and the left part of the tag returned by
-                  <code class="osta-hl osta-hl-inline">jack-tag</code>, and the
-                  right part is a subtree with its left part being the empty
-                  string
-                  <code class="osta-hl osta-hl-inline">&quot;&quot;</code>
-                  (because <code class="osta-hl osta-hl-inline">(:hr)</code> is
-                  a void tag) and the right part being its current right part,
-                </p>
-              </li>
-              <li>
-                <p>
-                  we push the <code class="osta-hl osta-hl-inline">cdr</code> of
-                  <code class="osta-hl osta-hl-inline">comps</code> to the stack
-                  <code class="osta-hl osta-hl-inline">rest</code> in order to
-                  treat it after,
-                </p>
-              </li>
-              <li>
-                <p>
-                  because <code class="osta-hl osta-hl-inline">(:hr)</code> has
-                  no children,
-                  <code class="osta-hl osta-hl-inline">comps</code> is the empty
-                  list to which we append the keyword
-                  <code class="osta-hl osta-hl-inline">:rest</code> (for the
-                  same reason as before),
-                </p>
-              </li>
-            </ol>
-
-            <p>so the new state is:</p>
-
-            <pre><code class="osta-hl osta-hl-block">(<span class="osta-hl-ta-colon-keyword">:tree</span> (<span class="osta-hl-ta-colon-keyword">:left</span> <span class="osta-hl-string">"&lt;div id=\"foo\" class=\"bar\"&gt;A&lt;p class=\"baz\"&gt;B&lt;hr /&gt;"</span>
-        <span class="osta-hl-ta-colon-keyword">:right</span> (<span class="osta-hl-ta-colon-keyword">:left</span> <span class="osta-hl-string">""</span>
-                <span class="osta-hl-ta-colon-keyword">:right</span> (<span class="osta-hl-ta-colon-keyword">:left</span> <span class="osta-hl-string">"&lt;/p&gt;"</span>
-                        <span class="osta-hl-ta-colon-keyword">:right</span> <span class="osta-hl-string">"&lt;/div&gt;"</span>)))
- <span class="osta-hl-ta-colon-keyword">:rest</span> ((<span class="osta-hl-string">"C"</span> <span class="osta-hl-ta-colon-keyword">:rest</span>) ((<span class="osta-hl-string">"D"</span> <span class="osta-hl-string">"E"</span> <span class="osta-hl-string">"F"</span>)))
- <span class="osta-hl-ta-colon-keyword">:comps</span> (<span class="osta-hl-ta-colon-keyword">:rest</span>)
- <span class="osta-hl-ta-colon-keyword">:comp</span> <span class="osta-hl-ta-colon-keyword">:rest</span>)</code></pre>
-
-            <p>
-              As <code class="osta-hl osta-hl-inline">comp</code> is equal to
-              the keyword <code class="osta-hl osta-hl-inline">:rest</code>,
-            </p>
-
-            <ol>
-              <li>
-                <p>
-                  we update <code class="osta-hl osta-hl-inline">tree</code> by
-                  appending the left part of the right part of
-                  <code class="osta-hl osta-hl-inline">tree</code> to its left
-                  part, and we set its right part to be the right part of the
-                  right part of
-                  <code class="osta-hl osta-hl-inline">tree</code>,
-                </p>
-              </li>
-              <li>
-                <p>
-                  we set <code class="osta-hl osta-hl-inline">comps</code> to be
-                  the most recently added list of components in the stack
-                  <code class="osta-hl osta-hl-inline">rest</code> that we also
-                  remove from the stack,
-                </p>
-              </li>
-            </ol>
-
-            <p>so the new state is:</p>
-
-            <pre><code class="osta-hl osta-hl-block">(<span class="osta-hl-ta-colon-keyword">:tree</span> (<span class="osta-hl-ta-colon-keyword">:left</span> <span class="osta-hl-string">"&lt;div id=\"foo\" class=\"bar\"&gt;A&lt;p class=\"baz\"&gt;B&lt;hr /&gt;"</span>
-        <span class="osta-hl-ta-colon-keyword">:right</span> (<span class="osta-hl-ta-colon-keyword">:left</span> <span class="osta-hl-string">"&lt;/p&gt;"</span>
-                <span class="osta-hl-ta-colon-keyword">:right</span> <span class="osta-hl-string">"&lt;/div&gt;"</span>))
- <span class="osta-hl-ta-colon-keyword">:rest</span> (((<span class="osta-hl-string">"D"</span> <span class="osta-hl-string">"E"</span> <span class="osta-hl-string">"F"</span>)))
- <span class="osta-hl-ta-colon-keyword">:comps</span> (<span class="osta-hl-string">"C"</span> <span class="osta-hl-ta-colon-keyword">:rest</span>)
- <span class="osta-hl-ta-colon-keyword">:comp</span> <span class="osta-hl-string">"C"</span>)</code></pre>
-
-            <p>
-              As <code class="osta-hl osta-hl-inline">comp</code> (equal to
-              <code class="osta-hl osta-hl-inline">&quot;C&quot;</code>) is a
-              string component, we do the same thing we did before for the
-              string components
-              <code class="osta-hl osta-hl-inline">&quot;A&quot;</code> and
-              <code class="osta-hl osta-hl-inline">&quot;B&quot;</code> (note
-              that the right part of
-              <code class="osta-hl osta-hl-inline">tree</code> and
-              <code class="osta-hl osta-hl-inline">rest</code> are unchanged).
-            </p>
-
-            <p>So the new state is:</p>
-
-            <pre><code class="osta-hl osta-hl-block">(<span class="osta-hl-ta-colon-keyword">:tree</span> (<span class="osta-hl-ta-colon-keyword">:left</span> <span class="osta-hl-string">"&lt;div id=\"foo\" class=\"bar\"&gt;A&lt;p class=\"baz\"&gt;B&lt;hr /&gt;C"</span>
-        <span class="osta-hl-ta-colon-keyword">:right</span> (<span class="osta-hl-ta-colon-keyword">:left</span> <span class="osta-hl-string">"&lt;/p&gt;"</span>
-                <span class="osta-hl-ta-colon-keyword">:right</span> <span class="osta-hl-string">"&lt;/div&gt;"</span>))
- <span class="osta-hl-ta-colon-keyword">:rest</span> (((<span class="osta-hl-string">"D"</span> <span class="osta-hl-string">"E"</span> <span class="osta-hl-string">"F"</span>)))
- <span class="osta-hl-ta-colon-keyword">:comps</span> (<span class="osta-hl-ta-colon-keyword">:rest</span>)
- <span class="osta-hl-ta-colon-keyword">:comp</span> <span class="osta-hl-ta-colon-keyword">:rest</span>)</code></pre>
-
-            <p>
-              As <code class="osta-hl osta-hl-inline">comp</code> is equal to
-              the keyword <code class="osta-hl osta-hl-inline">:rest</code>,
-            </p>
-
-            <ol>
-              <li>
-                <p>
-                  we update <code class="osta-hl osta-hl-inline">tree</code> by
-                  appending the left part of the right part of
-                  <code class="osta-hl osta-hl-inline">tree</code> to its left
-                  part, and we set its right part to be the right part of the
-                  right part of
-                  <code class="osta-hl osta-hl-inline">tree</code>,
-                </p>
-              </li>
-              <li>
-                <p>
-                  we set <code class="osta-hl osta-hl-inline">comps</code> to be
-                  the most recently added list of components in the stack
-                  <code class="osta-hl osta-hl-inline">rest</code> that we also
-                  remove from the stack,
-                </p>
-              </li>
-            </ol>
-
-            <p>so the new state is:</p>
-
-            <pre><code class="osta-hl osta-hl-block">(<span class="osta-hl-ta-colon-keyword">:tree</span> (<span class="osta-hl-ta-colon-keyword">:left</span> <span class="osta-hl-string">"&lt;div id=\"foo\" class=\"bar\"&gt;A&lt;p class=\"baz\"&gt;B&lt;hr /&gt;C&lt;/p&gt;"</span>
-        <span class="osta-hl-ta-colon-keyword">:right</span> <span class="osta-hl-string">"&lt;/div&gt;"</span>)
- <span class="osta-hl-ta-colon-keyword">:rest</span> nil
- <span class="osta-hl-ta-colon-keyword">:comps</span> ((<span class="osta-hl-string">"D"</span> <span class="osta-hl-string">"E"</span> <span class="osta-hl-string">"F"</span>))
- <span class="osta-hl-ta-colon-keyword">:comp</span> (<span class="osta-hl-string">"D"</span> <span class="osta-hl-string">"E"</span> <span class="osta-hl-string">"F"</span>))</code></pre>
-
-            <p>
-              As <code class="osta-hl osta-hl-inline">comp</code> (equal to
-              <code class="osta-hl osta-hl-inline"
-                >(&quot;D&quot; &quot;E&quot; &quot;F&quot;)</code
-              >) is a list of components, we put them at the same level of the
-              <code class="osta-hl osta-hl-inline">cdr</code> of
-              <code class="osta-hl osta-hl-inline">comps</code>, specifically we
-              set <code class="osta-hl osta-hl-inline">comps</code> to be
-              <code class="osta-hl osta-hl-inline"
-                >(append comp (cdr comps))</code
-              >. Note that <code class="osta-hl osta-hl-inline">tree</code> is
-              unchanged.
-            </p>
-
-            <p>So the new state is:</p>
-
-            <pre><code class="osta-hl osta-hl-block">(<span class="osta-hl-ta-colon-keyword">:tree</span> (<span class="osta-hl-ta-colon-keyword">:left</span> <span class="osta-hl-string">"&lt;div id=\"foo\" class=\"bar\"&gt;A&lt;p class=\"baz\"&gt;B&lt;hr /&gt;C&lt;/p&gt;"</span>
-        <span class="osta-hl-ta-colon-keyword">:right</span> <span class="osta-hl-string">"&lt;/div&gt;"</span>)
- <span class="osta-hl-ta-colon-keyword">:rest</span> nil
- <span class="osta-hl-ta-colon-keyword">:comps</span> (<span class="osta-hl-string">"D"</span> <span class="osta-hl-string">"E"</span> <span class="osta-hl-string">"F"</span>)
- <span class="osta-hl-ta-colon-keyword">:comp</span> <span class="osta-hl-string">"D"</span>)</code></pre>
-
-            <p>
-              As <code class="osta-hl osta-hl-inline">comp</code> (equal to
-              <code class="osta-hl osta-hl-inline">&quot;D&quot;</code>) is a
-              string component, we do the same thing we did before for the
-              string components
-              <code class="osta-hl osta-hl-inline">&quot;A&quot;</code>,
-              <code class="osta-hl osta-hl-inline">&quot;B&quot;</code> and
-              <code class="osta-hl osta-hl-inline">&quot;C&quot;</code> (note
-              that the right part of
-              <code class="osta-hl osta-hl-inline">tree</code> and
-              <code class="osta-hl osta-hl-inline">rest</code> are unchanged).
-            </p>
-
-            <p>So the new state is:</p>
-
-            <pre><code class="osta-hl osta-hl-block">(<span class="osta-hl-ta-colon-keyword">:tree</span> (<span class="osta-hl-ta-colon-keyword">:left</span> <span class="osta-hl-string">"&lt;div id=\"foo\" class=\"bar\"&gt;A&lt;p class=\"baz\"&gt;B&lt;hr /&gt;C&lt;/p&gt;D"</span>
-        <span class="osta-hl-ta-colon-keyword">:right</span> <span class="osta-hl-string">"&lt;/div&gt;"</span>)
- <span class="osta-hl-ta-colon-keyword">:rest</span> nil
- <span class="osta-hl-ta-colon-keyword">:comps</span> (<span class="osta-hl-string">"E"</span> <span class="osta-hl-string">"F"</span>)
- <span class="osta-hl-ta-colon-keyword">:comp</span> <span class="osta-hl-string">"E"</span>)</code></pre>
-
-            <p>
-              As <code class="osta-hl osta-hl-inline">comp</code> (equal to
-              <code class="osta-hl osta-hl-inline">&quot;E&quot;</code>) is a
-              string component, we do the same thing we did before for the
-              string components
-              <code class="osta-hl osta-hl-inline">&quot;A&quot;</code>,
-              <code class="osta-hl osta-hl-inline">&quot;B&quot;</code>,
-              <code class="osta-hl osta-hl-inline">&quot;C&quot;</code> and
-              <code class="osta-hl osta-hl-inline">&quot;D&quot;</code> (note
-              that the right part of
-              <code class="osta-hl osta-hl-inline">tree</code> and
-              <code class="osta-hl osta-hl-inline">rest</code> are unchanged).
-            </p>
-
-            <p>So the new state is:</p>
-
-            <pre><code class="osta-hl osta-hl-block">(<span class="osta-hl-ta-colon-keyword">:tree</span>
- (<span class="osta-hl-ta-colon-keyword">:left</span> <span class="osta-hl-string">"&lt;div id=\"foo\" class=\"bar\"&gt;A&lt;p class=\"baz\"&gt;B&lt;hr /&gt;C&lt;/p&gt;DE"</span>
-  <span class="osta-hl-ta-colon-keyword">:right</span> <span class="osta-hl-string">"&lt;/div&gt;"</span>)
- <span class="osta-hl-ta-colon-keyword">:rest</span> nil
- <span class="osta-hl-ta-colon-keyword">:comps</span> (<span class="osta-hl-string">"F"</span>)
- <span class="osta-hl-ta-colon-keyword">:comp</span> <span class="osta-hl-string">"F"</span>)</code></pre>
-
-            <p>
-              As <code class="osta-hl osta-hl-inline">comp</code> (equal to
-              <code class="osta-hl osta-hl-inline">&quot;F&quot;</code>) is a
-              string component, we do the same thing we did before for the
-              string components
-              <code class="osta-hl osta-hl-inline">&quot;A&quot;</code>,
-              <code class="osta-hl osta-hl-inline">&quot;B&quot;</code>,
-              <code class="osta-hl osta-hl-inline">&quot;C&quot;</code>,
-              <code class="osta-hl osta-hl-inline">&quot;D&quot;</code> and
-              <code class="osta-hl osta-hl-inline">&quot;F&quot;</code> (note
-              that the right part of
-              <code class="osta-hl osta-hl-inline">tree</code> and
-              <code class="osta-hl osta-hl-inline">rest</code> are unchanged).
-            </p>
-
-            <p>So the new state is:</p>
-
-            <pre><code class="osta-hl osta-hl-block">(<span class="osta-hl-ta-colon-keyword">:tree</span> (<span class="osta-hl-ta-colon-keyword">:left</span> <span class="osta-hl-string">"&lt;div id=\"foo\" class=\"bar\"&gt;A&lt;p class=\"baz\"&gt;B&lt;hr /&gt;C&lt;/p&gt;DEF"</span>
-        <span class="osta-hl-ta-colon-keyword">:right</span> <span class="osta-hl-string">"&lt;/div&gt;"</span>)
- <span class="osta-hl-ta-colon-keyword">:rest</span> nil
- <span class="osta-hl-ta-colon-keyword">:comps</span> nil
- <span class="osta-hl-ta-colon-keyword">:comp</span> nil)</code></pre>
-
-            <p>
-              At that point, as
-              <code class="osta-hl osta-hl-inline">comp</code> is
-              <code class="osta-hl osta-hl-inline">nil</code> and
-              <code class="osta-hl osta-hl-inline">(cdr comps)</code> too, we
-              get out of the loop.
-            </p>
-
-            <p>
-              That means that we have completely traversed
-              <code class="osta-hl osta-hl-inline">input-tree</code>.
-            </p>
-
-            <p>
-              And now <code class="osta-hl osta-hl-inline">tree</code> contains
-              all the data we need to produce the html string.
-            </p>
-
-            <p>
-              Eventually, we return the concatenation of the left part and the
-              right part of <code class="osta-hl osta-hl-inline">tree</code>.
-            </p>
-
-            <pre><code class="osta-hl osta-hl-block"><span class="osta-hl-string">"&lt;div id=\"foo\" class=\"bar\"&gt;A&lt;p class=\"baz\"&gt;B&lt;hr /&gt;C&lt;/p&gt;DEF&lt;/div&gt;"</span></code></pre>
-          </div>
-        </div>
-      </div>
-    </div>
-  </body>
-</html>
+&lt;/<span class="one-hl-function-name">div</span>&gt;</code></pre>
+</div>
+</div>
+
+<div><h2 id="one-17dc968c6e">Description of the program</h2><div><p>In this section we call <code class="one-hl one-hl-inline">input-tree</code> the data structure <code class="one-hl one-hl-inline">jack-html</code>
+receives as input.
+</p>
+
+<p>For instance, in the form
+</p>
+
+<pre><code class="one-hl one-hl-block">(jack-html '(<span class="one-hl-ta-colon-keyword">:div.foo</span> (<span class="one-hl-ta-colon-keyword">:p</span> <span class="one-hl-string">"bar-1"</span> (<span class="one-hl-ta-colon-keyword">:span</span> <span class="one-hl-string">"baz"</span>) <span class="one-hl-string">"bar-2"</span>)))</code></pre>
+
+<p>the data structure
+</p>
+
+<pre><code class="one-hl one-hl-block">'(<span class="one-hl-ta-colon-keyword">:div.foo</span> (<span class="one-hl-ta-colon-keyword">:p</span> <span class="one-hl-string">"bar-1"</span> (<span class="one-hl-ta-colon-keyword">:span</span> <span class="one-hl-string">"baz"</span>) <span class="one-hl-string">"bar-2"</span>))</code></pre>
+
+<p>is the <code class="one-hl one-hl-inline">input-tree</code>.
+</p>
+
+<p>With that said, let&apos;s describe our program.
+</p>
+
+<p>While traversing <code class="one-hl one-hl-inline">input-tree</code> (<a href="https://en.wikipedia.org/wiki/Depth-first_search">DFS</a> algorithm), we builds a tree
+containing a left part and a right part that represents the html
+string to be returned at the end of the traversal.
+</p>
+
+<p>While the left part of this tree is always a string, the right part can
+grow recursively by dividing it into two parts (left and right).
+</p>
+
+<p>In the following example, we can see the successive states of the
+this tree when <code class="one-hl one-hl-inline">input-tree</code> is <code class="one-hl one-hl-inline">&apos;(:div.foo (:p &quot;bar-1&quot; (:span &quot;baz&quot;)
+&quot;bar-2&quot;))</code>:
+</p>
+
+<pre><code class="one-hl one-hl-block">(<span class="one-hl-ta-colon-keyword">:left</span> <span class="one-hl-string">""</span>
+ <span class="one-hl-ta-colon-keyword">:right</span> <span class="one-hl-string">""</span>)
+
+(<span class="one-hl-ta-colon-keyword">:left</span> <span class="one-hl-string">"&lt;div class=\"foo\"&gt;"</span>
+ <span class="one-hl-ta-colon-keyword">:right</span> <span class="one-hl-string">"&lt;/div&gt;"</span>)
+
+(<span class="one-hl-ta-colon-keyword">:left</span> <span class="one-hl-string">"&lt;div class=\"foo\"&gt;&lt;p&gt;"</span>
+ <span class="one-hl-ta-colon-keyword">:right</span> <span class="one-hl-string">"&lt;/p&gt;&lt;/div&gt;"</span>)
+
+(<span class="one-hl-ta-colon-keyword">:left</span> <span class="one-hl-string">"&lt;div class=\"foo\"&gt;&lt;p&gt;bar-1"</span>
+ <span class="one-hl-ta-colon-keyword">:right</span> <span class="one-hl-string">"&lt;/p&gt;&lt;/div&gt;"</span>)
+
+(<span class="one-hl-ta-colon-keyword">:left</span> <span class="one-hl-string">"&lt;div class=\"foo\"&gt;&lt;p&gt;bar-1&lt;span&gt;"</span>
+ <span class="one-hl-ta-colon-keyword">:right</span> (<span class="one-hl-ta-colon-keyword">:left</span> <span class="one-hl-string">"&lt;/span&gt;"</span>
+         <span class="one-hl-ta-colon-keyword">:right</span> <span class="one-hl-string">"&lt;/p&gt;&lt;/div&gt;"</span>))
+
+(<span class="one-hl-ta-colon-keyword">:left</span> <span class="one-hl-string">"&lt;div class=\"foo\"&gt;&lt;p&gt;bar-1&lt;span&gt;baz"</span>
+ <span class="one-hl-ta-colon-keyword">:right</span> (<span class="one-hl-ta-colon-keyword">:left</span> <span class="one-hl-string">"&lt;/span&gt;"</span>
+         <span class="one-hl-ta-colon-keyword">:right</span> <span class="one-hl-string">"&lt;/p&gt;&lt;/div&gt;"</span>))
+
+(<span class="one-hl-ta-colon-keyword">:left</span> <span class="one-hl-string">"&lt;div class=\"foo\"&gt;&lt;p&gt;bar-1&lt;span&gt;baz&lt;/span&gt;"</span>
+ <span class="one-hl-ta-colon-keyword">:right</span> <span class="one-hl-string">"&lt;/p&gt;&lt;/div&gt;"</span>)
+
+(<span class="one-hl-ta-colon-keyword">:left</span> <span class="one-hl-string">"&lt;div class=\"foo\"&gt;&lt;p&gt;bar-1&lt;span&gt;baz&lt;/span&gt;bar-2"</span>
+ <span class="one-hl-ta-colon-keyword">:right</span> <span class="one-hl-string">"&lt;/p&gt;&lt;/div&gt;"</span>)</code></pre>
+
+<p>When we have completly traversed <code class="one-hl one-hl-inline">input-tree</code>, we return the
+concatenation of the left part and the right part of <code class="one-hl one-hl-inline">tree</code>.
+</p>
+
+<p>Specifically, at the beginning of the programs we set the variables
+<code class="one-hl one-hl-inline">tree</code>, <code class="one-hl one-hl-inline">rest</code>, <code class="one-hl one-hl-inline">comps</code> and <code class="one-hl one-hl-inline">comp</code> that define the state of the program.
+</p>
+
+<p><code class="one-hl one-hl-inline">tree</code> is the tree we build a each iteration that contains the elements
+needed to construct the final returned value.
+</p>
+
+<p><code class="one-hl one-hl-inline">rest</code> is the stack that contains the parts of <code class="one-hl one-hl-inline">input-tree</code> left out to be
+processed later.
+</p>
+
+<p><code class="one-hl one-hl-inline">comps</code> is the current list of components being treated.  Components in
+<code class="one-hl one-hl-inline">comps</code> are at the same level in <code class="one-hl one-hl-inline">input-tree</code>.
+</p>
+
+<p><code class="one-hl one-hl-inline">comp</code> is the current component (always equal to the first element of
+<code class="one-hl one-hl-inline">comps</code>) that determines how we must update the state (<code class="one-hl one-hl-inline">tree</code>, <code class="one-hl one-hl-inline">rest</code> and
+<code class="one-hl one-hl-inline">comps</code>) of the program at each iteration:
+</p>
+
+<ol><li><p>when <code class="one-hl one-hl-inline">comp</code> is <code class="one-hl one-hl-inline">nil</code>, we ignore this component and follow the
+traversal with the <code class="one-hl one-hl-inline">cdr</code> of <code class="one-hl one-hl-inline">comps</code>,
+</p>
+</li>
+<li><p>when <code class="one-hl one-hl-inline">comp</code> is a string or a number, we update <code class="one-hl one-hl-inline">tree</code> by appending
+<code class="one-hl one-hl-inline">comp</code> (as a string) to the left part of <code class="one-hl one-hl-inline">tree</code>, the right part staying
+the same,
+</p>
+</li>
+<li><p>when <code class="one-hl one-hl-inline">comp</code> is a list of components we put them at the same level of
+the <code class="one-hl one-hl-inline">cdr</code> of <code class="one-hl one-hl-inline">comps</code>, specifically we set <code class="one-hl one-hl-inline">comps</code> to be <code class="one-hl one-hl-inline">(append comp
+   (cdr comps))</code>,
+</p>
+</li>
+<li><p>when <code class="one-hl one-hl-inline">comp</code> is a tag component, two cases must be distinguished
+according to the value of <code class="one-hl one-hl-inline">(cdr comps)</code>:
+</p>
+<ol><li><p>if <code class="one-hl one-hl-inline">(cdr comps)</code> is non-nil:
+</p>
+<ul><li><p>we update <code class="one-hl one-hl-inline">tree</code> according to the value returned by <code class="one-hl one-hl-inline">jack-tag</code> and
+by dividing the right part of <code class="one-hl one-hl-inline">tree</code> into two parts,
+</p>
+</li>
+<li><p>we push the components <code class="one-hl one-hl-inline">(cdr comps)</code> on the stack <code class="one-hl one-hl-inline">rest</code> and,
+</p>
+</li>
+<li><p>the components to be treated in the next iteration are the
+children of the tag component <code class="one-hl one-hl-inline">comp</code> (which can be either <code class="one-hl one-hl-inline">(cdr
+        comp)</code> or <code class="one-hl one-hl-inline">(cddr comp)</code>), so <code class="one-hl one-hl-inline">comps</code> should be set to contains
+those children only, but as we need to remember that once
+those children has been treated we have to treat the element
+added to the stack <code class="one-hl one-hl-inline">rest</code>, we also append to <code class="one-hl one-hl-inline">comps</code> the keyword
+<code class="one-hl one-hl-inline">:rest</code>,
+</p>
+</li>
+</ul>
+</li>
+<li><p>if <code class="one-hl one-hl-inline">(cdr comps)</code> is nil:
+</p>
+<ul><li><p>it means that there is no part of <code class="one-hl one-hl-inline">input-tree</code> to be added to
+the stack <code class="one-hl one-hl-inline">rest</code> at this iteration, so <code class="one-hl one-hl-inline">rest</code> stays unchanged,
+</p>
+</li>
+<li><p>we just update <code class="one-hl one-hl-inline">tree</code> according to the value returned by
+<code class="one-hl one-hl-inline">jack-tag</code> (without dividing the right part of <code class="one-hl one-hl-inline">tree</code>) and,
+</p>
+</li>
+<li><p>the components to be treated in the next iteration are the
+children of the tag component <code class="one-hl one-hl-inline">comp</code> (which can be either <code class="one-hl one-hl-inline">(cdr
+        comp)</code> or <code class="one-hl one-hl-inline">(cddr comp)</code>), so <code class="one-hl one-hl-inline">comps</code> is set to be those children,
+</p>
+</li>
+</ul>
+</li>
+</ol>
+</li>
+<li><p>when <code class="one-hl one-hl-inline">comp</code> is the keyword <code class="one-hl one-hl-inline">:rest</code>, that means we have completed the
+traversal of a part of <code class="one-hl one-hl-inline">input-tree</code>, so:
+</p>
+<ol><li><p>we update <code class="one-hl one-hl-inline">tree</code> accordingly by appending the left part of the
+right part of <code class="one-hl one-hl-inline">tree</code> to its left part, and we set its right part
+to be the right part of the right part of <code class="one-hl one-hl-inline">tree</code>,
+</p>
+</li>
+<li><p>now we have to treat the most recently added list of components
+in the stack <code class="one-hl one-hl-inline">rest</code>.  To do so, we set <code class="one-hl one-hl-inline">comps</code> to be the first
+element of <code class="one-hl one-hl-inline">rest</code> and remove that first element from <code class="one-hl one-hl-inline">rest</code> (this
+can be done like this <code class="one-hl one-hl-inline">(setq comps (pop rest))</code>),
+</p>
+</li>
+</ol>
+</li>
+<li><p>when <code class="one-hl one-hl-inline">comp</code> is any other object, we skip it or we raise an error
+depending on the variable <code class="one-hl one-hl-inline">jack-html-raise-error-p</code>.
+</p>
+</li>
+</ol>
+
+<p>Finally, when <code class="one-hl one-hl-inline">comp</code> is <code class="one-hl one-hl-inline">nil</code> and <code class="one-hl one-hl-inline">(cdr comps)</code> too, it means that we have
+completly traversed <code class="one-hl one-hl-inline">input-tree</code>, no more iterations are needed and we
+return the concatenation of the left part and the right part of <code class="one-hl one-hl-inline">tree</code>.
+</p>
+</div>
+</div>
+
+<div><h2 id="one-adc3d8ed98">Running the program step by step</h2><div><p>Let&apos;s go through each iteration that the following evaluation implies
+by printing out and commenting the successive states of our program:
+</p>
+
+<pre><code class="one-hl one-hl-block">(jack-html
+ '(<span class="one-hl-ta-colon-keyword">:div/foo.bar</span>
+   <span class="one-hl-string">"A"</span>
+   (<span class="one-hl-ta-colon-keyword">:p</span> (@ <span class="one-hl-ta-colon-keyword">:class</span> <span class="one-hl-string">"baz"</span>) <span class="one-hl-string">"B"</span> (<span class="one-hl-ta-colon-keyword">:hr</span>) <span class="one-hl-string">"C"</span>)
+   (<span class="one-hl-string">"D"</span> <span class="one-hl-string">"E"</span> <span class="one-hl-string">"F"</span>)))</code></pre>
+
+<p><code class="one-hl one-hl-inline">input-tree</code>, <code class="one-hl one-hl-inline">tree</code>, <code class="one-hl one-hl-inline">rest</code>, <code class="one-hl one-hl-inline">comps</code> and <code class="one-hl one-hl-inline">comp</code> have the same meaning as in the
+previous section.
+</p>
+
+<p>And, each state of the program is representing as a plist where:
+</p>
+
+<ul><li><p><code class="one-hl one-hl-inline">:tree</code> hold the value of <code class="one-hl one-hl-inline">tree</code>,
+</p>
+</li>
+<li><p><code class="one-hl one-hl-inline">:rest</code> the value of <code class="one-hl one-hl-inline">rest</code>,
+</p>
+</li>
+<li><p><code class="one-hl one-hl-inline">:comps</code> the value of <code class="one-hl one-hl-inline">comps</code> and,
+</p>
+</li>
+<li><p><code class="one-hl one-hl-inline">:comp</code> the value of <code class="one-hl one-hl-inline">comp</code>.
+</p>
+</li>
+</ul>
+
+<p>First the state is initialized like this (before entering in the <code class="one-hl one-hl-inline">while</code>
+loop):
+</p>
+
+<pre><code class="one-hl one-hl-block">(<span class="one-hl-ta-colon-keyword">:tree</span> (<span class="one-hl-ta-colon-keyword">:left</span> <span class="one-hl-string">""</span>
+        <span class="one-hl-ta-colon-keyword">:right</span> <span class="one-hl-string">""</span>)
+ <span class="one-hl-ta-colon-keyword">:rest</span> nil
+ <span class="one-hl-ta-colon-keyword">:comps</span> ((<span class="one-hl-ta-colon-keyword">:div/foo.bar</span>
+          <span class="one-hl-string">"A"</span>
+          (<span class="one-hl-ta-colon-keyword">:p</span> (@ <span class="one-hl-ta-colon-keyword">:class</span> <span class="one-hl-string">"baz"</span>) <span class="one-hl-string">"B"</span> (<span class="one-hl-ta-colon-keyword">:hr</span>) <span class="one-hl-string">"C"</span>)
+          (<span class="one-hl-string">"D"</span> <span class="one-hl-string">"E"</span> <span class="one-hl-string">"F"</span>)))
+ <span class="one-hl-ta-colon-keyword">:comp</span> (<span class="one-hl-ta-colon-keyword">:div/foo.bar</span>
+        <span class="one-hl-string">"A"</span>
+        (<span class="one-hl-ta-colon-keyword">:p</span> (@ <span class="one-hl-ta-colon-keyword">:class</span> <span class="one-hl-string">"baz"</span>) <span class="one-hl-string">"B"</span> (<span class="one-hl-ta-colon-keyword">:hr</span>) <span class="one-hl-string">"C"</span>)
+        (<span class="one-hl-string">"D"</span> <span class="one-hl-string">"E"</span> <span class="one-hl-string">"F"</span>)))</code></pre>
+
+<p>As <code class="one-hl one-hl-inline">comp</code> (equal to <code class="one-hl one-hl-inline">(:div/foo.bar ...)</code>) is a tag component, and is the
+only component in <code class="one-hl one-hl-inline">comps</code>:
+</p>
+
+<ol><li><p><code class="one-hl one-hl-inline">tree</code> is updated with the left part and right part of the tag
+returned by <code class="one-hl one-hl-inline">jack-tag</code> function,
+</p>
+</li>
+<li><p><code class="one-hl one-hl-inline">rest</code> stack stays <code class="one-hl one-hl-inline">nil</code>,
+</p>
+</li>
+<li><p>the components of <code class="one-hl one-hl-inline">input-tree</code> that should be treated in the next
+iteration are the children of the tag <code class="one-hl one-hl-inline">comp</code>, which are the
+components at the same level of the string component <code class="one-hl one-hl-inline">&quot;A&quot;</code>,
+specifically, the new value of <code class="one-hl one-hl-inline">comps</code> is <code class="one-hl one-hl-inline">cdr</code> of the current <code class="one-hl one-hl-inline">comp</code>,
+</p>
+</li>
+</ol>
+
+<p>so the new state is:
+</p>
+
+<pre><code class="one-hl one-hl-block">(<span class="one-hl-ta-colon-keyword">:tree</span> (<span class="one-hl-ta-colon-keyword">:left</span> <span class="one-hl-string">"&lt;div id=\"foo\" class=\"bar\"&gt;"</span>
+        <span class="one-hl-ta-colon-keyword">:right</span> <span class="one-hl-string">"&lt;/div&gt;"</span>)
+ <span class="one-hl-ta-colon-keyword">:rest</span> nil
+ <span class="one-hl-ta-colon-keyword">:comps</span> (<span class="one-hl-string">"A"</span>
+         (<span class="one-hl-ta-colon-keyword">:p</span> (@ <span class="one-hl-ta-colon-keyword">:class</span> <span class="one-hl-string">"baz"</span>) <span class="one-hl-string">"B"</span> (<span class="one-hl-ta-colon-keyword">:hr</span>) <span class="one-hl-string">"C"</span>)
+         (<span class="one-hl-string">"D"</span> <span class="one-hl-string">"E"</span> <span class="one-hl-string">"F"</span>))
+ <span class="one-hl-ta-colon-keyword">:comp</span> <span class="one-hl-string">"A"</span>)</code></pre>
+
+<p>As <code class="one-hl one-hl-inline">comp</code> (equal to <code class="one-hl one-hl-inline">&quot;A&quot;</code>) is a string component,
+</p>
+
+<ol><li><p>we append <code class="one-hl one-hl-inline">&quot;A&quot;</code> to the left part of <code class="one-hl one-hl-inline">tree</code>,
+</p>
+</li>
+<li><p>and we iterate on the <code class="one-hl one-hl-inline">cdr</code> of the current <code class="one-hl one-hl-inline">comps</code> (it means on the
+next components at the same level of <code class="one-hl one-hl-inline">&quot;A&quot;</code> component),
+</p>
+</li>
+</ol>
+
+<p>so the new state is:
+</p>
+
+<pre><code class="one-hl one-hl-block">(<span class="one-hl-ta-colon-keyword">:tree</span> (<span class="one-hl-ta-colon-keyword">:left</span> <span class="one-hl-string">"&lt;div id=\"foo\" class=\"bar\"&gt;A"</span>
+        <span class="one-hl-ta-colon-keyword">:right</span> <span class="one-hl-string">"&lt;/div&gt;"</span>)
+ <span class="one-hl-ta-colon-keyword">:rest</span> nil
+ <span class="one-hl-ta-colon-keyword">:comps</span> ((<span class="one-hl-ta-colon-keyword">:p</span> (@ <span class="one-hl-ta-colon-keyword">:class</span> <span class="one-hl-string">"baz"</span>) <span class="one-hl-string">"B"</span> (<span class="one-hl-ta-colon-keyword">:hr</span>) <span class="one-hl-string">"C"</span>)
+         (<span class="one-hl-string">"D"</span> <span class="one-hl-string">"E"</span> <span class="one-hl-string">"F"</span>))
+ <span class="one-hl-ta-colon-keyword">:comp</span> (<span class="one-hl-ta-colon-keyword">:p</span> (@ <span class="one-hl-ta-colon-keyword">:class</span> <span class="one-hl-string">"baz"</span>) <span class="one-hl-string">"B"</span> (<span class="one-hl-ta-colon-keyword">:hr</span>) <span class="one-hl-string">"C"</span>))</code></pre>
+
+<p>As <code class="one-hl one-hl-inline">comp</code> (equal to <code class="one-hl one-hl-inline">(:p (@ :class &quot;baz&quot;) ...)</code>) is a tag component but
+not the only components in <code class="one-hl one-hl-inline">comps</code>:
+</p>
+
+<ol><li><p><code class="one-hl one-hl-inline">tree</code> is updated with the left part being the concatenation of its
+current left part and the left part of the tag returned by
+<code class="one-hl one-hl-inline">jack-tag</code>, and the right part is a subtree with its left part being
+the right part of the tag return by <code class="one-hl one-hl-inline">jack-tag</code> and the right part
+being its current right part,
+</p>
+</li>
+<li><p>we push the <code class="one-hl one-hl-inline">cdr</code> of <code class="one-hl one-hl-inline">comps</code> to the stack <code class="one-hl one-hl-inline">rest</code> in order to treat it
+after,
+</p>
+</li>
+<li><p>the components to be treated in the next iteration are the children
+of the tag component <code class="one-hl one-hl-inline">comp</code> (which are the components at the same
+level of the string component <code class="one-hl one-hl-inline">&quot;B&quot;</code>), so <code class="one-hl one-hl-inline">comps</code> should be set to
+contains those children only, but as we need to remember that once
+those children has been treated we have to treat the element added
+to the stack <code class="one-hl one-hl-inline">rest</code>, we also append to <code class="one-hl one-hl-inline">comps</code> the keyword <code class="one-hl one-hl-inline">:rest</code>,
+</p>
+</li>
+</ol>
+
+<p>so the new state is:
+</p>
+
+<pre><code class="one-hl one-hl-block">(<span class="one-hl-ta-colon-keyword">:tree</span> (<span class="one-hl-ta-colon-keyword">:left</span> <span class="one-hl-string">"&lt;div id=\"foo\" class=\"bar\"&gt;A&lt;p class=\"baz\"&gt;"</span>
+        <span class="one-hl-ta-colon-keyword">:right</span> (<span class="one-hl-ta-colon-keyword">:left</span> <span class="one-hl-string">"&lt;/p&gt;"</span>
+                <span class="one-hl-ta-colon-keyword">:right</span> <span class="one-hl-string">"&lt;/div&gt;"</span>))
+ <span class="one-hl-ta-colon-keyword">:rest</span> (((<span class="one-hl-string">"D"</span> <span class="one-hl-string">"E"</span> <span class="one-hl-string">"F"</span>)))
+ <span class="one-hl-ta-colon-keyword">:comps</span> (<span class="one-hl-string">"B"</span> (<span class="one-hl-ta-colon-keyword">:hr</span>) <span class="one-hl-string">"C"</span> <span class="one-hl-ta-colon-keyword">:rest</span>)
+ <span class="one-hl-ta-colon-keyword">:comp</span> <span class="one-hl-string">"B"</span>)</code></pre>
+
+<p>As <code class="one-hl one-hl-inline">comp</code> (equal to <code class="one-hl one-hl-inline">&quot;B&quot;</code>) is a string component, we do the same thing we
+did before for the string component <code class="one-hl one-hl-inline">&quot;A&quot;</code> (note that the right part of
+<code class="one-hl one-hl-inline">tree</code> and <code class="one-hl one-hl-inline">rest</code> are unchanged).
+</p>
+
+<p>So the new state is:
+</p>
+
+<pre><code class="one-hl one-hl-block">(<span class="one-hl-ta-colon-keyword">:tree</span> (<span class="one-hl-ta-colon-keyword">:left</span> <span class="one-hl-string">"&lt;div id=\"foo\" class=\"bar\"&gt;A&lt;p class=\"baz\"&gt;B"</span>
+        <span class="one-hl-ta-colon-keyword">:right</span> (<span class="one-hl-ta-colon-keyword">:left</span> <span class="one-hl-string">"&lt;/p&gt;"</span>
+                <span class="one-hl-ta-colon-keyword">:right</span> <span class="one-hl-string">"&lt;/div&gt;"</span>))
+ <span class="one-hl-ta-colon-keyword">:rest</span> (((<span class="one-hl-string">"D"</span> <span class="one-hl-string">"E"</span> <span class="one-hl-string">"F"</span>)))
+ <span class="one-hl-ta-colon-keyword">:comps</span> ((<span class="one-hl-ta-colon-keyword">:hr</span>) <span class="one-hl-string">"C"</span> <span class="one-hl-ta-colon-keyword">:rest</span>)
+ <span class="one-hl-ta-colon-keyword">:comp</span> (<span class="one-hl-ta-colon-keyword">:hr</span>))</code></pre>
+
+<p>As <code class="one-hl one-hl-inline">comp</code> (equal to <code class="one-hl one-hl-inline">(:hr)</code>) is a tag component but not the only
+components in <code class="one-hl one-hl-inline">comps</code>:
+</p>
+
+<ol><li><p><code class="one-hl one-hl-inline">tree</code> is updated with the left part being the concatenation of its
+current left part and the left part of the tag returned by
+<code class="one-hl one-hl-inline">jack-tag</code>, and the right part is a subtree with its left part being
+the empty string <code class="one-hl one-hl-inline">&quot;&quot;</code> (because <code class="one-hl one-hl-inline">(:hr)</code> is a void tag) and the right
+part being its current right part,
+</p>
+</li>
+<li><p>we push the <code class="one-hl one-hl-inline">cdr</code> of <code class="one-hl one-hl-inline">comps</code> to the stack <code class="one-hl one-hl-inline">rest</code> in order to treat it
+after,
+</p>
+</li>
+<li><p>because <code class="one-hl one-hl-inline">(:hr)</code> has no children, <code class="one-hl one-hl-inline">comps</code> is the empty list to which we
+append the keyword <code class="one-hl one-hl-inline">:rest</code> (for the same reason as before),
+</p>
+</li>
+</ol>
+
+<p>so the new state is:
+</p>
+
+<pre><code class="one-hl one-hl-block">(<span class="one-hl-ta-colon-keyword">:tree</span> (<span class="one-hl-ta-colon-keyword">:left</span> <span class="one-hl-string">"&lt;div id=\"foo\" class=\"bar\"&gt;A&lt;p class=\"baz\"&gt;B&lt;hr /&gt;"</span>
+        <span class="one-hl-ta-colon-keyword">:right</span> (<span class="one-hl-ta-colon-keyword">:left</span> <span class="one-hl-string">""</span>
+                <span class="one-hl-ta-colon-keyword">:right</span> (<span class="one-hl-ta-colon-keyword">:left</span> <span class="one-hl-string">"&lt;/p&gt;"</span>
+                        <span class="one-hl-ta-colon-keyword">:right</span> <span class="one-hl-string">"&lt;/div&gt;"</span>)))
+ <span class="one-hl-ta-colon-keyword">:rest</span> ((<span class="one-hl-string">"C"</span> <span class="one-hl-ta-colon-keyword">:rest</span>) ((<span class="one-hl-string">"D"</span> <span class="one-hl-string">"E"</span> <span class="one-hl-string">"F"</span>)))
+ <span class="one-hl-ta-colon-keyword">:comps</span> (<span class="one-hl-ta-colon-keyword">:rest</span>)
+ <span class="one-hl-ta-colon-keyword">:comp</span> <span class="one-hl-ta-colon-keyword">:rest</span>)</code></pre>
+
+<p>As <code class="one-hl one-hl-inline">comp</code> is equal to the keyword <code class="one-hl one-hl-inline">:rest</code>,
+</p>
+
+<ol><li><p>we update <code class="one-hl one-hl-inline">tree</code> by appending the left part of the right part of <code class="one-hl one-hl-inline">tree</code>
+to its left part, and we set its right part to be the right part of
+the right part of <code class="one-hl one-hl-inline">tree</code>,
+</p>
+</li>
+<li><p>we set <code class="one-hl one-hl-inline">comps</code> to be the most recently added list of components in
+the stack <code class="one-hl one-hl-inline">rest</code> that we also remove from the stack,
+</p>
+</li>
+</ol>
+
+<p>so the new state is:
+</p>
+
+<pre><code class="one-hl one-hl-block">(<span class="one-hl-ta-colon-keyword">:tree</span> (<span class="one-hl-ta-colon-keyword">:left</span> <span class="one-hl-string">"&lt;div id=\"foo\" class=\"bar\"&gt;A&lt;p class=\"baz\"&gt;B&lt;hr /&gt;"</span>
+        <span class="one-hl-ta-colon-keyword">:right</span> (<span class="one-hl-ta-colon-keyword">:left</span> <span class="one-hl-string">"&lt;/p&gt;"</span>
+                <span class="one-hl-ta-colon-keyword">:right</span> <span class="one-hl-string">"&lt;/div&gt;"</span>))
+ <span class="one-hl-ta-colon-keyword">:rest</span> (((<span class="one-hl-string">"D"</span> <span class="one-hl-string">"E"</span> <span class="one-hl-string">"F"</span>)))
+ <span class="one-hl-ta-colon-keyword">:comps</span> (<span class="one-hl-string">"C"</span> <span class="one-hl-ta-colon-keyword">:rest</span>)
+ <span class="one-hl-ta-colon-keyword">:comp</span> <span class="one-hl-string">"C"</span>)</code></pre>
+
+<p>As <code class="one-hl one-hl-inline">comp</code> (equal to <code class="one-hl one-hl-inline">&quot;C&quot;</code>) is a string component, we do the same thing we
+did before for the string components <code class="one-hl one-hl-inline">&quot;A&quot;</code> and <code class="one-hl one-hl-inline">&quot;B&quot;</code> (note that the right
+part of <code class="one-hl one-hl-inline">tree</code> and <code class="one-hl one-hl-inline">rest</code> are unchanged).
+</p>
+
+<p>So the new state is:
+</p>
+
+<pre><code class="one-hl one-hl-block">(<span class="one-hl-ta-colon-keyword">:tree</span> (<span class="one-hl-ta-colon-keyword">:left</span> <span class="one-hl-string">"&lt;div id=\"foo\" class=\"bar\"&gt;A&lt;p class=\"baz\"&gt;B&lt;hr /&gt;C"</span>
+        <span class="one-hl-ta-colon-keyword">:right</span> (<span class="one-hl-ta-colon-keyword">:left</span> <span class="one-hl-string">"&lt;/p&gt;"</span>
+                <span class="one-hl-ta-colon-keyword">:right</span> <span class="one-hl-string">"&lt;/div&gt;"</span>))
+ <span class="one-hl-ta-colon-keyword">:rest</span> (((<span class="one-hl-string">"D"</span> <span class="one-hl-string">"E"</span> <span class="one-hl-string">"F"</span>)))
+ <span class="one-hl-ta-colon-keyword">:comps</span> (<span class="one-hl-ta-colon-keyword">:rest</span>)
+ <span class="one-hl-ta-colon-keyword">:comp</span> <span class="one-hl-ta-colon-keyword">:rest</span>)</code></pre>
+
+<p>As <code class="one-hl one-hl-inline">comp</code> is equal to the keyword <code class="one-hl one-hl-inline">:rest</code>,
+</p>
+
+<ol><li><p>we update <code class="one-hl one-hl-inline">tree</code> by appending the left part of the right part of <code class="one-hl one-hl-inline">tree</code>
+to its left part, and we set its right part to be the right part of
+the right part of <code class="one-hl one-hl-inline">tree</code>,
+</p>
+</li>
+<li><p>we set <code class="one-hl one-hl-inline">comps</code> to be the most recently added list of components in
+the stack <code class="one-hl one-hl-inline">rest</code> that we also remove from the stack,
+</p>
+</li>
+</ol>
+
+<p>so the new state is:
+</p>
+
+<pre><code class="one-hl one-hl-block">(<span class="one-hl-ta-colon-keyword">:tree</span> (<span class="one-hl-ta-colon-keyword">:left</span> <span class="one-hl-string">"&lt;div id=\"foo\" class=\"bar\"&gt;A&lt;p class=\"baz\"&gt;B&lt;hr /&gt;C&lt;/p&gt;"</span>
+        <span class="one-hl-ta-colon-keyword">:right</span> <span class="one-hl-string">"&lt;/div&gt;"</span>)
+ <span class="one-hl-ta-colon-keyword">:rest</span> nil
+ <span class="one-hl-ta-colon-keyword">:comps</span> ((<span class="one-hl-string">"D"</span> <span class="one-hl-string">"E"</span> <span class="one-hl-string">"F"</span>))
+ <span class="one-hl-ta-colon-keyword">:comp</span> (<span class="one-hl-string">"D"</span> <span class="one-hl-string">"E"</span> <span class="one-hl-string">"F"</span>))</code></pre>
+
+<p>As <code class="one-hl one-hl-inline">comp</code> (equal to <code class="one-hl one-hl-inline">(&quot;D&quot; &quot;E&quot; &quot;F&quot;)</code>) is a list of components,
+we put them at the same level of the <code class="one-hl one-hl-inline">cdr</code> of <code class="one-hl one-hl-inline">comps</code>, specifically we set
+<code class="one-hl one-hl-inline">comps</code> to be <code class="one-hl one-hl-inline">(append comp (cdr comps))</code>.  Note that <code class="one-hl one-hl-inline">tree</code> is unchanged.
+</p>
+
+<p>So the new state is:
+</p>
+
+<pre><code class="one-hl one-hl-block">(<span class="one-hl-ta-colon-keyword">:tree</span> (<span class="one-hl-ta-colon-keyword">:left</span> <span class="one-hl-string">"&lt;div id=\"foo\" class=\"bar\"&gt;A&lt;p class=\"baz\"&gt;B&lt;hr /&gt;C&lt;/p&gt;"</span>
+        <span class="one-hl-ta-colon-keyword">:right</span> <span class="one-hl-string">"&lt;/div&gt;"</span>)
+ <span class="one-hl-ta-colon-keyword">:rest</span> nil
+ <span class="one-hl-ta-colon-keyword">:comps</span> (<span class="one-hl-string">"D"</span> <span class="one-hl-string">"E"</span> <span class="one-hl-string">"F"</span>)
+ <span class="one-hl-ta-colon-keyword">:comp</span> <span class="one-hl-string">"D"</span>)</code></pre>
+
+<p>As <code class="one-hl one-hl-inline">comp</code> (equal to <code class="one-hl one-hl-inline">&quot;D&quot;</code>) is a string component, we do the same thing we
+did before for the string components <code class="one-hl one-hl-inline">&quot;A&quot;</code>, <code class="one-hl one-hl-inline">&quot;B&quot;</code> and <code class="one-hl one-hl-inline">&quot;C&quot;</code> (note that the
+right part of <code class="one-hl one-hl-inline">tree</code> and <code class="one-hl one-hl-inline">rest</code> are unchanged).
+</p>
+
+<p>So the new state is:
+</p>
+
+<pre><code class="one-hl one-hl-block">(<span class="one-hl-ta-colon-keyword">:tree</span> (<span class="one-hl-ta-colon-keyword">:left</span> <span class="one-hl-string">"&lt;div id=\"foo\" class=\"bar\"&gt;A&lt;p class=\"baz\"&gt;B&lt;hr /&gt;C&lt;/p&gt;D"</span>
+        <span class="one-hl-ta-colon-keyword">:right</span> <span class="one-hl-string">"&lt;/div&gt;"</span>)
+ <span class="one-hl-ta-colon-keyword">:rest</span> nil
+ <span class="one-hl-ta-colon-keyword">:comps</span> (<span class="one-hl-string">"E"</span> <span class="one-hl-string">"F"</span>)
+ <span class="one-hl-ta-colon-keyword">:comp</span> <span class="one-hl-string">"E"</span>)</code></pre>
+
+<p>As <code class="one-hl one-hl-inline">comp</code> (equal to <code class="one-hl one-hl-inline">&quot;E&quot;</code>) is a string component, we do the same thing we
+did before for the string components <code class="one-hl one-hl-inline">&quot;A&quot;</code>, <code class="one-hl one-hl-inline">&quot;B&quot;</code>, <code class="one-hl one-hl-inline">&quot;C&quot;</code> and <code class="one-hl one-hl-inline">&quot;D&quot;</code> (note that
+the right part of <code class="one-hl one-hl-inline">tree</code> and <code class="one-hl one-hl-inline">rest</code> are unchanged).
+</p>
+
+<p>So the new state is:
+</p>
+
+<pre><code class="one-hl one-hl-block">(<span class="one-hl-ta-colon-keyword">:tree</span>
+ (<span class="one-hl-ta-colon-keyword">:left</span> <span class="one-hl-string">"&lt;div id=\"foo\" class=\"bar\"&gt;A&lt;p class=\"baz\"&gt;B&lt;hr /&gt;C&lt;/p&gt;DE"</span>
+  <span class="one-hl-ta-colon-keyword">:right</span> <span class="one-hl-string">"&lt;/div&gt;"</span>)
+ <span class="one-hl-ta-colon-keyword">:rest</span> nil
+ <span class="one-hl-ta-colon-keyword">:comps</span> (<span class="one-hl-string">"F"</span>)
+ <span class="one-hl-ta-colon-keyword">:comp</span> <span class="one-hl-string">"F"</span>)</code></pre>
+
+<p>As <code class="one-hl one-hl-inline">comp</code> (equal to <code class="one-hl one-hl-inline">&quot;F&quot;</code>) is a string component, we do the same thing we
+did before for the string components <code class="one-hl one-hl-inline">&quot;A&quot;</code>, <code class="one-hl one-hl-inline">&quot;B&quot;</code>, <code class="one-hl one-hl-inline">&quot;C&quot;</code>, <code class="one-hl one-hl-inline">&quot;D&quot;</code> and <code class="one-hl one-hl-inline">&quot;F&quot;</code> (note
+that the right part of <code class="one-hl one-hl-inline">tree</code> and <code class="one-hl one-hl-inline">rest</code> are unchanged).
+</p>
+
+<p>So the new state is:
+</p>
+
+<pre><code class="one-hl one-hl-block">(<span class="one-hl-ta-colon-keyword">:tree</span> (<span class="one-hl-ta-colon-keyword">:left</span> <span class="one-hl-string">"&lt;div id=\"foo\" class=\"bar\"&gt;A&lt;p class=\"baz\"&gt;B&lt;hr /&gt;C&lt;/p&gt;DEF"</span>
+        <span class="one-hl-ta-colon-keyword">:right</span> <span class="one-hl-string">"&lt;/div&gt;"</span>)
+ <span class="one-hl-ta-colon-keyword">:rest</span> nil
+ <span class="one-hl-ta-colon-keyword">:comps</span> nil
+ <span class="one-hl-ta-colon-keyword">:comp</span> nil)</code></pre>
+
+<p>At that point, as <code class="one-hl one-hl-inline">comp</code> is <code class="one-hl one-hl-inline">nil</code> and <code class="one-hl one-hl-inline">(cdr comps)</code> too, we get out of the
+loop.
+</p>
+
+<p>That means that we have completely traversed <code class="one-hl one-hl-inline">input-tree</code>.
+</p>
+
+<p>And now <code class="one-hl one-hl-inline">tree</code> contains all the data we need to produce the html
+string.
+</p>
+
+<p>Eventually, we return the concatenation of the left part and the right
+part of <code class="one-hl one-hl-inline">tree</code>.
+</p>
+
+<pre><code class="one-hl one-hl-block"><span class="one-hl-string">"&lt;div id=\"foo\" class=\"bar\"&gt;A&lt;p class=\"baz\"&gt;B&lt;hr /&gt;C&lt;/p&gt;DEF&lt;/div&gt;"</span></code></pre>
+</div>
+</div>
+<div class="nav"><a href="/recursive-vs-iterative-implementation-of-jack-html-in-elisp/">NEXT</a></div></div></body></html>

@@ -1,178 +1,119 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <link rel="stylesheet" type="text/css" href="one.css" />
-  </head>
-  <body>
-    <div class="container">
-      <div>
-        <h1>Jack</h1>
-        <div>
-          <p>
-            <code class="osta-hl osta-hl-inline">jack</code> is a HTML generator
-            library for Emacs Lisp.
-          </p>
+<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1" /><link rel="stylesheet" type="text/css" href="/one.css" /><title>Jack</title></head><body><div class="header">Jack</div><div class="content"><div id="home"><div><p><a href="https://github.com/tonyaldon/jack">jack</a> is a HTML generator library for Emacs Lisp.
+</p>
 
-          <p>
-            Find the source code
-            here: <a href="https://github.com/tonyaldon/jack">
-              https://github.com/tonyaldon/jack
-            </a>
-          </p>
+<p>To install it put <code class="one-hl one-hl-inline">jack.el</code> file in your load path and require <code class="one-hl one-hl-inline">jack</code>
+like this:
+</p>
 
-          <p>
-            If you want to read about its implementation, here are two articles:
-          </p>
+<pre><code class="one-hl one-hl-block">(<span class="one-hl-keyword">require</span> '<span class="one-hl-constant">jack</span>)</code></pre>
 
-          <ul>
-            <li>
-              <p>
-                <a href="/jack-html-implementation-details/"
-                  >jack-html implementation details</a
-                >,
-              </p>
-            </li>
-            <li>
-              <p>
-                <a
-                  href="/recursive-vs-iterative-implementation-of-jack-html-in-elisp/"
-                  >Recursive vs. iterative implementation of jack-html in
-                  Elisp</a
-                >.
-              </p>
-            </li>
-          </ul>
+<p><code class="one-hl one-hl-inline">jack</code> provides the function <code class="one-hl one-hl-inline">jack-html</code> that takes a data structure
+as input representing the HTML tree you want to generate and generates it
+as a string.
+</p>
 
-          <p>
-            If you want an example of a website built
-            using <code class="osta-hl osta-hl-inline">jack</code> you
-            can take a look at
-            <a href="https://gitlab.com/tonyaldon/dieta/">
-              https://gitlab.com/tonyaldon/dieta/
-            </a>
-            .
-          </p>
+<p>For instance:
+</p>
 
-          <p>If you just want to use it, read on:</p>
+<pre><code class="one-hl one-hl-block">(jack-html '(<span class="one-hl-ta-colon-keyword">:section</span> (<span class="one-hl-ta-colon-keyword">:div</span> (<span class="one-hl-ta-colon-keyword">:p</span> <span class="one-hl-string">"foo"</span>))))
+<span class="one-hl-comment-delimiter">;; </span><span class="one-hl-comment">"&lt;section&gt;&lt;div&gt;&lt;p&gt;foo&lt;/p&gt;&lt;/div&gt;&lt;/section&gt;"</span></code></pre>
 
-          <p>
-            To install it put
-            <code class="osta-hl osta-hl-inline">jack.el</code> file in your
-            load path and require
-            <code class="osta-hl osta-hl-inline">jack</code>
-            like this:
-          </p>
+<p>HTML attributes are specified in a list starting by the <code class="one-hl one-hl-inline">@</code> sign
+</p>
 
-          <pre><code class="osta-hl osta-hl-block">(<span class="osta-hl-keyword">require</span> '<span class="osta-hl-constant">jack</span>)</code></pre>
+<pre><code class="one-hl one-hl-block">(jack-html '(<span class="one-hl-ta-colon-keyword">:div</span> (@ <span class="one-hl-ta-colon-keyword">:id</span> <span class="one-hl-string">"id"</span> <span class="one-hl-ta-colon-keyword">:class</span> <span class="one-hl-string">"class"</span> <span class="one-hl-ta-colon-keyword">:style</span> <span class="one-hl-string">"color:red;"</span>) <span class="one-hl-string">"foo"</span>))
+<span class="one-hl-comment-delimiter">;; </span><span class="one-hl-comment">"&lt;div id=\"id\" class=\"class\" style=\"color:red;\"&gt;foo&lt;/div&gt;"</span></code></pre>
 
-          <p>
-            <code class="osta-hl osta-hl-inline">jack</code> provides the
-            function <code class="osta-hl osta-hl-inline">jack-html</code> that
-            takes a data structure as input representing the HTML tree you want
-            to generate and generates it as a string.
-          </p>
+<p>In the keyword defining the HTML tag you can use <code class="one-hl one-hl-inline">/</code> to declare its
+<code class="one-hl one-hl-inline">id</code> and <code class="one-hl one-hl-inline">.</code> to declare its classes like this:
+</p>
 
-          <p>For instance:</p>
+<pre><code class="one-hl one-hl-block">(jack-html '(<span class="one-hl-ta-colon-keyword">:div/id.class-1.class-2</span>
+             (@ <span class="one-hl-ta-colon-keyword">:class</span> <span class="one-hl-string">"class-3"</span> <span class="one-hl-ta-colon-keyword">:style</span> <span class="one-hl-string">"color:red;"</span>)
+             <span class="one-hl-string">"foo"</span>))
+<span class="one-hl-comment-delimiter">;; </span><span class="one-hl-comment">"&lt;div id=\"id\" class=\"class-1 class-2 class-3\" style=\"color:red;\"&gt;foo&lt;/div&gt;"</span></code></pre>
 
-          <pre><code class="osta-hl osta-hl-block">(jack-html '(<span class="osta-hl-ta-colon-keyword">:section</span> (<span class="osta-hl-ta-colon-keyword">:div</span> (<span class="osta-hl-ta-colon-keyword">:p</span> <span class="osta-hl-string">"foo"</span>))))
-<span class="osta-hl-comment-delimiter">;; </span><span class="osta-hl-comment">"&lt;section&gt;&lt;div&gt;&lt;p&gt;foo&lt;/p&gt;&lt;/div&gt;&lt;/section&gt;"</span></code></pre>
+<p>Note that I would have prefered to use <code class="one-hl one-hl-inline">#</code> for declaring the <code class="one-hl one-hl-inline">id</code> but it
+has to be escaped in keywords which is ugly.
+</p>
 
-          <p>
-            HTML attributes are specified in a list starting by the
-            <code class="osta-hl osta-hl-inline">@</code> sign
-          </p>
+<p>Tag content can be lists of components:
+</p>
 
-          <pre><code class="osta-hl osta-hl-block">(jack-html '(<span class="osta-hl-ta-colon-keyword">:div</span> (@ <span class="osta-hl-ta-colon-keyword">:id</span> <span class="osta-hl-string">"id"</span> <span class="osta-hl-ta-colon-keyword">:class</span> <span class="osta-hl-string">"class"</span> <span class="osta-hl-ta-colon-keyword">:style</span> <span class="osta-hl-string">"color:red;"</span>) <span class="osta-hl-string">"foo"</span>))
-<span class="osta-hl-comment-delimiter">;; </span><span class="osta-hl-comment">"&lt;div id=\"id\" class=\"class\" style=\"color:red;\"&gt;foo&lt;/div&gt;"</span></code></pre>
+<pre><code class="one-hl one-hl-block">(jack-html '(<span class="one-hl-ta-colon-keyword">:ul</span> ((<span class="one-hl-ta-colon-keyword">:li</span> <span class="one-hl-string">"1"</span>) (<span class="one-hl-ta-colon-keyword">:li</span> <span class="one-hl-string">"2"</span>))))
+<span class="one-hl-comment-delimiter">;; </span><span class="one-hl-comment">"&lt;ul&gt;&lt;li&gt;1&lt;/li&gt;&lt;li&gt;2&lt;/li&gt;&lt;/ul&gt;"
+</span>
+(jack-html '(<span class="one-hl-ta-colon-keyword">:ul</span> (@ <span class="one-hl-ta-colon-keyword">:id</span> <span class="one-hl-string">"id"</span>) ((<span class="one-hl-ta-colon-keyword">:li</span> <span class="one-hl-string">"1"</span>) (<span class="one-hl-ta-colon-keyword">:li</span> <span class="one-hl-string">"2"</span>))))
+<span class="one-hl-comment-delimiter">;; </span><span class="one-hl-comment">"&lt;ul id=\"id\"&gt;&lt;li&gt;1&lt;/li&gt;&lt;li&gt;2&lt;/li&gt;&lt;/ul&gt;"</span></code></pre>
 
-          <p>
-            In the keyword defining the HTML tag you can use
-            <code class="osta-hl osta-hl-inline">/</code> to declare its
-            <code class="osta-hl osta-hl-inline">id</code> and
-            <code class="osta-hl osta-hl-inline">.</code> to declare its classes
-            like this:
-          </p>
+<p>Components can be generated by a forms:
+</p>
 
-          <pre><code class="osta-hl osta-hl-block">(jack-html '(<span class="osta-hl-ta-colon-keyword">:div/id.class-1.class-2</span>
-             (@ <span class="osta-hl-ta-colon-keyword">:class</span> <span class="osta-hl-string">"class-3"</span> <span class="osta-hl-ta-colon-keyword">:style</span> <span class="osta-hl-string">"color:red;"</span>)
-             <span class="osta-hl-string">"foo"</span>))
-<span class="osta-hl-comment-delimiter">;; </span><span class="osta-hl-comment">"&lt;div id=\"id\" class=\"class-1 class-2 class-3\" style=\"color:red;\"&gt;foo&lt;/div&gt;"</span></code></pre>
+<pre><code class="one-hl one-hl-block">(jack-html `(<span class="one-hl-ta-colon-keyword">:p</span> ,(concat <span class="one-hl-string">"foo-"</span> <span class="one-hl-string">"bar"</span>)))
+<span class="one-hl-comment-delimiter">;; </span><span class="one-hl-comment">"&lt;p&gt;foo-bar&lt;/p&gt;"
+</span>
+(jack-html (mapcar (<span class="one-hl-keyword">lambda</span> (n) `(<span class="one-hl-ta-colon-keyword">:p</span> ,n)) '(1 2 3)))
+<span class="one-hl-comment-delimiter">;; </span><span class="one-hl-comment">"&lt;p&gt;1&lt;/p&gt;&lt;p&gt;2&lt;/p&gt;&lt;p&gt;3&lt;/p&gt;"</span></code></pre>
 
-          <p>
-            Note that I would have prefered to use
-            <code class="osta-hl osta-hl-inline">#</code> for declaring the
-            <code class="osta-hl osta-hl-inline">id</code> but it has to be
-            escaped in keywords which is ugly.
-          </p>
+<p>Tag content can be forms:
+</p>
 
-          <p>Tag content can be lists of components:</p>
+<pre><code class="one-hl one-hl-block">(jack-html `(<span class="one-hl-ta-colon-keyword">:ul</span> ,(mapcar (<span class="one-hl-keyword">lambda</span> (n) `(<span class="one-hl-ta-colon-keyword">:li</span> ,n)) '(1 2))))
+<span class="one-hl-comment-delimiter">;; </span><span class="one-hl-comment">"&lt;ul&gt;&lt;li&gt;1&lt;/li&gt;&lt;li&gt;2&lt;/li&gt;&lt;/ul&gt;"
+</span>
+(jack-html `(<span class="one-hl-ta-colon-keyword">:ul</span> (@ <span class="one-hl-ta-colon-keyword">:id</span> <span class="one-hl-string">"id"</span>)
+             ,(mapcar (<span class="one-hl-keyword">lambda</span> (n) `(<span class="one-hl-ta-colon-keyword">:li</span> ,n)) '(1 2))))
+<span class="one-hl-comment-delimiter">;; </span><span class="one-hl-comment">"&lt;ul id=\"id\"&gt;&lt;li&gt;1&lt;/li&gt;&lt;li&gt;2&lt;/li&gt;&lt;/ul&gt;"</span></code></pre>
 
-          <pre><code class="osta-hl osta-hl-block">(jack-html '(<span class="osta-hl-ta-colon-keyword">:ul</span> ((<span class="osta-hl-ta-colon-keyword">:li</span> <span class="osta-hl-string">"1"</span>) (<span class="osta-hl-ta-colon-keyword">:li</span> <span class="osta-hl-string">"2"</span>))))
-<span class="osta-hl-comment-delimiter">;; </span><span class="osta-hl-comment">"&lt;ul&gt;&lt;li&gt;1&lt;/li&gt;&lt;li&gt;2&lt;/li&gt;&lt;/ul&gt;"</span>
+<p>Tag content and attributes can be variables:
+</p>
 
-(jack-html '(<span class="osta-hl-ta-colon-keyword">:ul</span> (@ <span class="osta-hl-ta-colon-keyword">:id</span> <span class="osta-hl-string">"id"</span>) ((<span class="osta-hl-ta-colon-keyword">:li</span> <span class="osta-hl-string">"1"</span>) (<span class="osta-hl-ta-colon-keyword">:li</span> <span class="osta-hl-string">"2"</span>))))
-<span class="osta-hl-comment-delimiter">;; </span><span class="osta-hl-comment">"&lt;ul id=\"id\"&gt;&lt;li&gt;1&lt;/li&gt;&lt;li&gt;2&lt;/li&gt;&lt;/ul&gt;"</span></code></pre>
-
-          <p>Components can be generated by a forms:</p>
-
-          <pre><code class="osta-hl osta-hl-block">(jack-html `(<span class="osta-hl-ta-colon-keyword">:p</span> ,(concat <span class="osta-hl-string">"foo-"</span> <span class="osta-hl-string">"bar"</span>)))
-<span class="osta-hl-comment-delimiter">;; </span><span class="osta-hl-comment">"&lt;p&gt;foo-bar&lt;/p&gt;"</span>
-
-(jack-html (mapcar (<span class="osta-hl-keyword">lambda</span> (n) `(<span class="osta-hl-ta-colon-keyword">:p</span> ,n)) '(1 2 3)))
-<span class="osta-hl-comment-delimiter">;; </span><span class="osta-hl-comment">"&lt;p&gt;1&lt;/p&gt;&lt;p&gt;2&lt;/p&gt;&lt;p&gt;3&lt;/p&gt;"</span></code></pre>
-
-          <p>Tag content can be forms:</p>
-
-          <pre><code class="osta-hl osta-hl-block">(jack-html `(<span class="osta-hl-ta-colon-keyword">:ul</span> ,(mapcar (<span class="osta-hl-keyword">lambda</span> (n) `(<span class="osta-hl-ta-colon-keyword">:li</span> ,n)) '(1 2))))
-<span class="osta-hl-comment-delimiter">;; </span><span class="osta-hl-comment">"&lt;ul&gt;&lt;li&gt;1&lt;/li&gt;&lt;li&gt;2&lt;/li&gt;&lt;/ul&gt;"</span>
-
-(jack-html `(<span class="osta-hl-ta-colon-keyword">:ul</span> (@ <span class="osta-hl-ta-colon-keyword">:id</span> <span class="osta-hl-string">"id"</span>)
-             ,(mapcar (<span class="osta-hl-keyword">lambda</span> (n) `(<span class="osta-hl-ta-colon-keyword">:li</span> ,n)) '(1 2))))
-<span class="osta-hl-comment-delimiter">;; </span><span class="osta-hl-comment">"&lt;ul id=\"id\"&gt;&lt;li&gt;1&lt;/li&gt;&lt;li&gt;2&lt;/li&gt;&lt;/ul&gt;"</span></code></pre>
-
-          <p>Tag content and attributes can be variables:</p>
-
-          <pre><code class="osta-hl osta-hl-block">(<span class="osta-hl-keyword">let</span> ((x <span class="osta-hl-string">"foo"</span>) (y <span class="osta-hl-string">"bar"</span>))
-  (jack-html `(<span class="osta-hl-ta-colon-keyword">:p</span> (@ <span class="osta-hl-ta-colon-keyword">:id</span> ,x) ,y)))
-<span class="osta-hl-comment-delimiter">;; </span><span class="osta-hl-comment">"&lt;p id=\"foo\"&gt;bar&lt;/p&gt;"</span>
-
+<pre><code class="one-hl one-hl-block">(<span class="one-hl-keyword">let</span> ((x <span class="one-hl-string">"foo"</span>) (y <span class="one-hl-string">"bar"</span>))
+  (jack-html `(<span class="one-hl-ta-colon-keyword">:p</span> (@ <span class="one-hl-ta-colon-keyword">:id</span> ,x) ,y)))
+<span class="one-hl-comment-delimiter">;; </span><span class="one-hl-comment">"&lt;p id=\"foo\"&gt;bar&lt;/p&gt;"
+</span>
 (jack-html
- (<span class="osta-hl-keyword">let</span> ((x <span class="osta-hl-string">"foo"</span>) (y <span class="osta-hl-string">"bar"</span>))
-   `(<span class="osta-hl-ta-colon-keyword">:p</span> (@ <span class="osta-hl-ta-colon-keyword">:id</span> ,x) ,y)))
-<span class="osta-hl-comment-delimiter">;; </span><span class="osta-hl-comment">"&lt;p id=\"foo\"&gt;bar&lt;/p&gt;"</span></code></pre>
+ (<span class="one-hl-keyword">let</span> ((x <span class="one-hl-string">"foo"</span>) (y <span class="one-hl-string">"bar"</span>))
+   `(<span class="one-hl-ta-colon-keyword">:p</span> (@ <span class="one-hl-ta-colon-keyword">:id</span> ,x) ,y)))
+<span class="one-hl-comment-delimiter">;; </span><span class="one-hl-comment">"&lt;p id=\"foo\"&gt;bar&lt;/p&gt;"</span></code></pre>
 
-          <p>
-            If the variable
-            <code class="osta-hl osta-hl-inline">jack-html-raise-error-p</code>
-            is set to <code class="osta-hl osta-hl-inline">nil</code>, which is
-            the default value,
-            <code class="osta-hl osta-hl-inline">jack-html</code> processes non
-            component object as the empty string.
-          </p>
+<p>If the variable <code class="one-hl one-hl-inline">jack-html-raise-error-p</code> is set to <code class="one-hl one-hl-inline">nil</code>, which is the
+default value, <code class="one-hl one-hl-inline">jack-html</code> processes non component object as the empty
+string.
+</p>
 
-          <p>
-            Let&apos;s consider the case of the vector like
-            <code class="osta-hl osta-hl-inline">[a b c]</code> that is not a
-            component for <code class="osta-hl osta-hl-inline">jack-html</code>.
-          </p>
+<p>Let&apos;s consider the case of the vector like <code class="one-hl one-hl-inline">[a b c]</code> that is not a
+component for <code class="one-hl one-hl-inline">jack-html</code>.
+</p>
 
-          <p>We have</p>
+<p>We have
+</p>
 
-          <pre><code class="osta-hl osta-hl-block">(<span class="osta-hl-keyword">let</span> ((jack-html-raise-error-p nil))
-  (jack-html <span class="osta-hl-string">"foo"</span> [a b c] <span class="osta-hl-string">"bar"</span>))
-<span class="osta-hl-comment-delimiter">;; </span><span class="osta-hl-comment">"foobar"</span></code></pre>
+<pre><code class="one-hl one-hl-block">(<span class="one-hl-keyword">let</span> ((jack-html-raise-error-p nil))
+  (jack-html <span class="one-hl-string">"foo"</span> [a b c] <span class="one-hl-string">"bar"</span>))
+<span class="one-hl-comment-delimiter">;; </span><span class="one-hl-comment">"foobar"</span></code></pre>
 
-          <p>and,</p>
+<p>and,
+</p>
 
-          <pre><code class="osta-hl osta-hl-block">(<span class="osta-hl-keyword">let</span> ((jack-html-raise-error-p t))
-  (jack-html <span class="osta-hl-string">"foo"</span> [a b c] <span class="osta-hl-string">"bar"</span>))</code></pre>
+<pre><code class="one-hl one-hl-block">(<span class="one-hl-keyword">let</span> ((jack-html-raise-error-p t))
+  (jack-html <span class="one-hl-string">"foo"</span> [a b c] <span class="one-hl-string">"bar"</span>))</code></pre>
 
-          <p>which raises the error:</p>
+<p>which raises the error:
+</p>
 
-          <pre><code class="osta-hl osta-hl-block">Object '[a b c]' of type 'vector' can't be a component in 'jack-html'</code></pre>
-        </div>
-      </div>
-    </div>
-  </body>
-</html>
+<pre><code class="one-hl one-hl-block">Object '[a b c]' of type 'vector' can't be a component in 'jack-html'</code></pre>
+
+<p>If you want to read about its implementation, here are two articles:
+</p>
+
+<ul><li><p><a href="/jack-html-implementation-details/">jack-html implementation details</a>,
+</p>
+</li>
+<li><p><a href="/recursive-vs-iterative-implementation-of-jack-html-in-elisp/">Recursive vs. iterative implementation of jack-html in Elisp</a>.
+</p>
+</li>
+</ul>
+</div>
+
+</div></div></body></html>

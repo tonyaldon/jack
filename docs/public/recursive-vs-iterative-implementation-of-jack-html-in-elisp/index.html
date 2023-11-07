@@ -1,98 +1,52 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <link rel="stylesheet" type="text/css" href="/one.css" />
-  </head>
-  <body>
-    <div class="container">
-      <div>
-        <a href="/">⇽ Go to Jack</a>
-        <h1>Recursive vs. iterative implementation of jack-html in Elisp</h1>
-        <div>
-          <p><u>created at 2022-02-07 | updated at 2022-11-05</u></p>
-        </div>
+<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1" /><link rel="stylesheet" type="text/css" href="/one.css" /><title>Recursive vs. iterative implementation of jack-html in Elisp</title></head><body><div class="header"><a href="/">Jack</a></div><div class="content"><div class="title"><h1>Recursive vs. iterative implementation of jack-html in Elisp</h1></div><div></div>
+<div><h2 id="one-d70caa0041">jack-html was named osta-html</h2><div><p>This article has been written when the package <code class="one-hl one-hl-inline">jack</code> was named <code class="one-hl one-hl-inline">osta</code>.
+</p>
 
-        <div>
-          <h2>jack-html was named osta-html</h2>
-          <div>
-            <p>
-              This article has been written when the package
-              <code class="osta-hl osta-hl-inline">jack</code> was named
-              <code class="osta-hl osta-hl-inline">osta</code>.
-            </p>
+<p>To be precise, the function <code class="one-hl one-hl-inline">osta-html</code> has been renamed <code class="one-hl one-hl-inline">jack-html</code> at
+commit <code class="one-hl one-hl-inline">851c8f6</code>.
+</p>
 
-            <p>
-              To be precise, the function
-              <code class="osta-hl osta-hl-inline">osta-html</code> has been
-              renamed <code class="osta-hl osta-hl-inline">jack-html</code> at
-              commit <code class="osta-hl osta-hl-inline">851c8f6</code>.
-            </p>
+<p>We haven&apos;t modified its content.  Don&apos;t be surprise if you look at the
+code base now to see no <code class="one-hl one-hl-inline">osta-html</code> function.
+</p>
+</div>
+</div>
 
-            <p>
-              We haven&apos;t modified its content. Don&apos;t be surprise if
-              you look at the code base now to see no
-              <code class="osta-hl osta-hl-inline">osta-html</code> function.
-            </p>
-          </div>
-        </div>
+<div><h2 id="one-bb324e766d">Push the limits</h2><div><p>At commit <code class="one-hl one-hl-inline">554d733</code> (2022-01-23), I finally got <code class="one-hl one-hl-inline">osta-html</code> working and
+passing the tests I wanted it to pass.  So, I had now a way to convert
+components (Elisp data structure representing html) into html like
+this:
+</p>
 
-        <div>
-          <h2>Push the limits</h2>
-          <div>
-            <p>
-              At commit
-              <code class="osta-hl osta-hl-inline">554d733</code> (2022-01-23),
-              I finally got
-              <code class="osta-hl osta-hl-inline">osta-html</code> working and
-              passing the tests I wanted it to pass. So, I had now a way to
-              convert components (Elisp data structure representing html) into
-              html like this:
-            </p>
+<pre><code class="one-hl one-hl-block">(osta-html '(<span class="one-hl-ta-colon-keyword">:div</span> (@ <span class="one-hl-ta-colon-keyword">:id</span> <span class="one-hl-string">"id"</span> <span class="one-hl-ta-colon-keyword">:class</span> <span class="one-hl-string">"class"</span>) <span class="one-hl-string">"foo"</span>))
+<span class="one-hl-comment-delimiter">;; </span><span class="one-hl-comment">"&lt;div id=\"id\" class=\"class\"&gt;foo&lt;/div&gt;"
+</span>
+(osta-html `(<span class="one-hl-ta-colon-keyword">:ul</span> ,(mapcar (<span class="one-hl-keyword">lambda</span> (n) `(<span class="one-hl-ta-colon-keyword">:li</span> ,n)) '(1 2))))
+<span class="one-hl-comment-delimiter">;; </span><span class="one-hl-comment">"&lt;ul&gt;&lt;li&gt;1&lt;/li&gt;&lt;li&gt;2&lt;/li&gt;&lt;/ul&gt;"</span></code></pre>
 
-            <pre><code class="osta-hl osta-hl-block">(osta-html '(<span class="osta-hl-ta-colon-keyword">:div</span> (@ <span class="osta-hl-ta-colon-keyword">:id</span> <span class="osta-hl-string">"id"</span> <span class="osta-hl-ta-colon-keyword">:class</span> <span class="osta-hl-string">"class"</span>) <span class="osta-hl-string">"foo"</span>))
-<span class="osta-hl-comment-delimiter">;; </span><span class="osta-hl-comment">"&lt;div id=\"id\" class=\"class\"&gt;foo&lt;/div&gt;"</span>
+<p>I was happy but I also had the <b>feeling</b> that the implementation wasn&apos;t
+&quot;robust&quot;.
+</p>
 
-(osta-html `(<span class="osta-hl-ta-colon-keyword">:ul</span> ,(mapcar (<span class="osta-hl-keyword">lambda</span> (n) `(<span class="osta-hl-ta-colon-keyword">:li</span> ,n)) '(1 2))))
-<span class="osta-hl-comment-delimiter">;; </span><span class="osta-hl-comment">"&lt;ul&gt;&lt;li&gt;1&lt;/li&gt;&lt;li&gt;2&lt;/li&gt;&lt;/ul&gt;"</span></code></pre>
+<p>So I decided to push the limits of <code class="one-hl one-hl-inline">osta-html</code> and gave it as input
+&quot;deep&quot; nested lists of <code class="one-hl one-hl-inline">:div</code> that looks like <code class="one-hl one-hl-inline">&apos;(:div (:div (:div &quot;foo&quot;)))</code>.
+</p>
 
-            <p>
-              I was happy but I also had the <b>feeling</b> that the
-              implementation wasn&apos;t &quot;robust&quot;.
-            </p>
+<p>And for only <code class="one-hl one-hl-inline">46</code> nested <code class="one-hl one-hl-inline">:div</code>, <code class="one-hl one-hl-inline">osta-html</code> raised the following error:
+</p>
 
-            <p>
-              So I decided to push the limits of
-              <code class="osta-hl osta-hl-inline">osta-html</code> and gave it
-              as input &quot;deep&quot; nested lists of
-              <code class="osta-hl osta-hl-inline">:div</code> that looks like
-              <code class="osta-hl osta-hl-inline"
-                >&apos;(:div (:div (:div &quot;foo&quot;)))</code
-              >.
-            </p>
+<pre><code class="one-hl one-hl-block">(error "Lisp nesting exceeds &#8216;max-lisp-eval-depth&#8217;")</code></pre>
 
-            <p>
-              And for only <code class="osta-hl osta-hl-inline">46</code> nested
-              <code class="osta-hl osta-hl-inline">:div</code>,
-              <code class="osta-hl osta-hl-inline">osta-html</code> raised the
-              following error:
-            </p>
 
-            <pre><code class="osta-hl osta-hl-block">(error "Lisp nesting exceeds &#8216;max-lisp-eval-depth&#8217;")</code></pre>
+<p>(Note that I use the default value of <code class="one-hl one-hl-inline">800</code> for the variable
+<code class="one-hl one-hl-inline">max-lisp-eval-depth</code>.)
+</p>
 
-            <p>
-              (Note that I use the default value of
-              <code class="osta-hl osta-hl-inline">800</code> for the variable
-              <code class="osta-hl osta-hl-inline">max-lisp-eval-depth</code>.)
-            </p>
+<p>The help buffer about <code class="one-hl one-hl-inline">max-lisp-eval-depth</code> variable tells us the
+following:
+</p>
 
-            <p>
-              The help buffer about
-              <code class="osta-hl osta-hl-inline">max-lisp-eval-depth</code>
-              variable tells us the following:
-            </p>
-
-            <pre><code class="osta-hl osta-hl-block">Limit on depth in &#8216;eval&#8217;, &#8216;apply&#8217; and &#8216;funcall&#8217; before error.
+<pre><code class="one-hl one-hl-block">Limit on depth in &#8216;eval&#8217;, &#8216;apply&#8217; and &#8216;funcall&#8217; before error.
 
 This limit serves to catch infinite recursions for you before they cause
 actual stack overflow in C, which would be fatal for Emacs.
@@ -100,475 +54,399 @@ You can safely make it considerably larger than its default value,
 if that proves inconveniently small.  However, if you increase it too far,
 Emacs could overflow the real C stack, and crash.</code></pre>
 
-            <p>At that point, I was:</p>
+<p>At that point, I was:
+</p>
 
-            <ol>
-              <li>
-                <p>
-                  <b>tired</b> (I didn&apos;t want to work more on
-                  <code class="osta-hl osta-hl-inline">osta-html</code>) but
-                  also,
-                </p>
-              </li>
-              <li>
-                <p>
-                  <b>super excited</b> (life was offering me the opportunity to
-                  learn more about Elisp and programming).
-                </p>
-              </li>
-            </ol>
+<ol><li><p><b>tired</b> (I didn&apos;t want to work more on <code class="one-hl one-hl-inline">osta-html</code>) but also,
+</p>
+</li>
+<li><p><b>super excited</b> (life was offering me the opportunity to learn more
+about Elisp and programming).
+</p>
+</li>
+</ol>
 
-            <p>
-              The first implementation (commit
-              <code class="osta-hl osta-hl-inline">554d733</code>) uses
-              recursive calls to traverse the tree (Elisp data structure
-              representing the html).
-            </p>
+<p>The first implementation (commit <code class="one-hl one-hl-inline">554d733</code>) uses recursive calls to
+traverse the tree (Elisp data structure representing the html).
+</p>
 
-            <p>
-              Too many calls to the function
-              <code class="osta-hl osta-hl-inline">apply</code> were causing the
-              error.
-            </p>
+<p>Too many calls to the function <code class="one-hl one-hl-inline">apply</code> were causing the error.
+</p>
 
-            <p>
-              I thought about making the recursive calls in tail position (not
-              the case in the implementation
-              <code class="osta-hl osta-hl-inline">554d733</code>). But, after
-              some readings (<a
-                href="https://stackoverflow.com/questions/38493904/why-is-there-no-tail-recursion-optimization-in-emacs-lisp-not-but-like-other-sc"
-                >Why is there no tail recursion optimization in Emacs lisp?
-                (stackoverflow)</a
-              >), I learned that this wasn&apos;t the way to go, because:
-            </p>
+<p>I thought about making the recursive calls in tail position (not the
+case in the implementation <code class="one-hl one-hl-inline">554d733</code>).  But, after some readings (<a href="https://stackoverflow.com/questions/38493904/why-is-there-no-tail-recursion-optimization-in-emacs-lisp-not-but-like-other-sc">Why is
+there no tail recursion optimization in Emacs lisp? (stackoverflow)</a>),
+I learned that this wasn&apos;t the way to go, because:
+</p>
 
-            <ol>
-              <li>
-                <p>
-                  Elisp doesn&apos;t implement tail-recursion optimization and,
-                </p>
-              </li>
-              <li>
-                <p>
-                  the implementation of function calls is &quot;relatively
-                  inefficient&quot; anyway.
-                </p>
-              </li>
-            </ol>
+<ol><li><p>Elisp doesn&apos;t implement tail-recursion optimization and,
+</p>
+</li>
+<li><p>the implementation of function calls is &quot;relatively inefficient&quot;
+anyway.
+</p>
+</li>
+</ol>
 
-            <p>
-              Considering these &quot;new&quot; elements (for me), instead of
-              forcing Elisp to do something it didn&apos;t want to do, I decided
-              to re-implement
-              <code class="osta-hl osta-hl-inline">osta-html</code> in an
-              iterative way (commit
-              <code class="osta-hl osta-hl-inline">cd43e0b</code> (2022-02-07)).
-            </p>
+<p>Considering these &quot;new&quot; elements (for me), instead of forcing Elisp to
+do something it didn&apos;t want to do, I decided to re-implement <code class="one-hl one-hl-inline">osta-html</code>
+in an iterative way (commit <code class="one-hl one-hl-inline">cd43e0b</code> (2022-02-07)).
+</p>
 
-            <p>Thus now, the new implementation:</p>
+<p>Thus now, the new implementation:
+</p>
 
-            <ol>
-              <li>
-                <p>
-                  passes the same tests (as the recursive one) regarding of the
-                  expected functionalities,
-                </p>
-              </li>
-              <li>
-                <p>
-                  works fine with more than
-                  <code class="osta-hl osta-hl-inline">10000</code> nested
-                  <code class="osta-hl osta-hl-inline">:div</code> (can do more)
-                  and,
-                </p>
-              </li>
-              <li>
-                <p>
-                  has &quot;more or less&quot; the same performances as the
-                  recursive one (If you know how to do good performance tests,
-                  <b>please reach out</b>, I&apos;m eager to learn).
-                </p>
-              </li>
-            </ol>
+<ol><li><p>passes the same tests (as the recursive one) regarding of the
+expected functionalities,
+</p>
+</li>
+<li><p>works fine with more than <code class="one-hl one-hl-inline">10000</code> nested <code class="one-hl one-hl-inline">:div</code> (can do more) and,
+</p>
+</li>
+<li><p>has &quot;more or less&quot; the same performances as the recursive one (If
+you know how to do good performance tests, <b>please reach out</b>, I&apos;m
+eager to learn).
+</p>
+</li>
+</ol>
 
-            <p>
-              If you are interested, you can find below the two implementations
-              of <code class="osta-hl osta-hl-inline">osta-html</code>:
-            </p>
+<p>If you are interested, you can find below the two implementations of
+<code class="one-hl one-hl-inline">osta-html</code>:
+</p>
 
-            <ol>
-              <li>
-                <p>
-                  the recursive one named
-                  <code class="osta-hl osta-hl-inline">osta-html-REC</code> and,
-                </p>
-              </li>
-              <li>
-                <p>
-                  the iterative one named
-                  <code class="osta-hl osta-hl-inline">osta-html-ITER</code>.
-                </p>
-              </li>
-            </ol>
+<ol><li><p>the recursive one named <code class="one-hl one-hl-inline">osta-html-REC</code> and,
+</p>
+</li>
+<li><p>the iterative one named <code class="one-hl one-hl-inline">osta-html-ITER</code>.
+</p>
+</li>
+</ol>
 
-            <p>
-              There is also a section that tests the functionalities of both
-              implementations.
-            </p>
+<p>There is also a section that tests the functionalities of both
+implementations.
+</p>
 
-            <p>The last section tests its &quot;robustness&quot;.</p>
+<p>The last section tests its &quot;robustness&quot;.
+</p>
 
-            <p>
-              Note that when I was re-implementing
-              <code class="osta-hl osta-hl-inline">osta-html</code> in an
-              iterative way, I also changed the way
-              <code class="osta-hl osta-hl-inline">osta-html</code> builds the
-              html strings removing the use of the function
-              <code class="osta-hl osta-hl-inline">format</code> that was
-              causing wrong results with string components containing
-              <code class="osta-hl osta-hl-inline">%s</code> strings.
-            </p>
-          </div>
-        </div>
+<p>Note that when I was re-implementing <code class="one-hl one-hl-inline">osta-html</code> in an iterative way, I
+also changed the way <code class="one-hl one-hl-inline">osta-html</code> builds the html strings removing the
+use of the function <code class="one-hl one-hl-inline">format</code> that was causing wrong results with string
+components containing <code class="one-hl one-hl-inline">%s</code> strings.
+</p>
+</div>
+</div>
 
-        <div>
-          <h2>
-            <code class="osta-hl osta-hl-inline">osta-html-REC</code> (recursive
-            implementation of
-            <code class="osta-hl osta-hl-inline">osta-html</code>)
-          </h2>
-          <div>
-            <pre><code class="osta-hl osta-hl-block"><span class="osta-hl-comment-delimiter">;; </span><span class="osta-hl-comment">commit 554d7337df242124822b6adcada50d1a99bac4a4</span>
-<span class="osta-hl-comment-delimiter">;; </span><span class="osta-hl-comment">Author: tony <a href="mailto:tony.aldon.adm%40gmail.com">&lt;tony.aldon.adm@gmail.com&gt;</a></span>
-<span class="osta-hl-comment-delimiter">;; </span><span class="osta-hl-comment">Date:   Sun Jan 23 10:08:13 2022 +0100</span>
+<div><h2 id="one-5755f0c19f">~osta-html-REC~ (recursive implementation of ~osta-html~)</h2><div><pre><code class="one-hl one-hl-block"><span class="one-hl-comment-delimiter">;; </span><span class="one-hl-comment">commit 554d7337df242124822b6adcada50d1a99bac4a4
+</span><span class="one-hl-comment-delimiter">;; </span><span class="one-hl-comment">Author: tony <a href="mailto:tony.aldon.adm%40gmail.com">&lt;tony.aldon.adm@gmail.com&gt;</a>
+</span><span class="one-hl-comment-delimiter">;; </span><span class="one-hl-comment">Date:   Sun Jan 23 10:08:13 2022 +0100
+</span>
+(<span class="one-hl-keyword">defvar</span> <span class="one-hl-variable-name">osta-html-raise-error-p-REC</span> nil <span class="one-hl-doc">""</span>)
 
-(<span class="osta-hl-keyword">defvar</span> <span class="osta-hl-variable-name">osta-html-raise-error-p-REC</span> nil <span class="osta-hl-doc">""</span>)
-
-(<span class="osta-hl-keyword">defun</span> <span class="osta-hl-function-name">osta-parse-tag-kw-REC</span> (tag-kw)
-  <span class="osta-hl-doc">"Return a list of (\"tag\" \"id\" \"class\") from a TAG-KW."</span>
-  (<span class="osta-hl-keyword">if-let*</span> (((keywordp tag-kw))
+(<span class="one-hl-keyword">defun</span> <span class="one-hl-function-name">osta-parse-tag-kw-REC</span> (tag-kw)
+  <span class="one-hl-doc">"Return a list of (\"tag\" \"id\" \"class\") from a TAG-KW."</span>
+  (<span class="one-hl-keyword">if-let*</span> (((keywordp tag-kw))
             (tag-s (symbol-name tag-kw))
-            ((string-match (concat <span class="osta-hl-string">"</span><span class="osta-hl-string"><span class="osta-hl-regexp-grouping-backslash">\\</span></span><span class="osta-hl-string"><span class="osta-hl-regexp-grouping-construct">(?:</span></span><span class="osta-hl-string">:</span><span class="osta-hl-string"><span class="osta-hl-regexp-grouping-backslash">\\</span></span><span class="osta-hl-string"><span class="osta-hl-regexp-grouping-construct">)</span></span><span class="osta-hl-string"><span class="osta-hl-regexp-grouping-backslash">\\</span></span><span class="osta-hl-string"><span class="osta-hl-regexp-grouping-construct">(</span></span><span class="osta-hl-string">[</span><span class="osta-hl-string"><span class="osta-hl-negation-char">^</span></span><span class="osta-hl-string"> /.]+</span><span class="osta-hl-string"><span class="osta-hl-regexp-grouping-backslash">\\</span></span><span class="osta-hl-string"><span class="osta-hl-regexp-grouping-construct">)</span></span><span class="osta-hl-string">"</span>
-                                   <span class="osta-hl-string">"</span><span class="osta-hl-string"><span class="osta-hl-regexp-grouping-backslash">\\</span></span><span class="osta-hl-string"><span class="osta-hl-regexp-grouping-construct">(?:</span></span><span class="osta-hl-string">/</span><span class="osta-hl-string"><span class="osta-hl-regexp-grouping-backslash">\\</span></span><span class="osta-hl-string"><span class="osta-hl-regexp-grouping-construct">(</span></span><span class="osta-hl-string">[</span><span class="osta-hl-string"><span class="osta-hl-negation-char">^</span></span><span class="osta-hl-string"> /.]+</span><span class="osta-hl-string"><span class="osta-hl-regexp-grouping-backslash">\\</span></span><span class="osta-hl-string"><span class="osta-hl-regexp-grouping-construct">)</span></span><span class="osta-hl-string"><span class="osta-hl-regexp-grouping-backslash">\\</span></span><span class="osta-hl-string"><span class="osta-hl-regexp-grouping-construct">)</span></span><span class="osta-hl-string">?"</span>
-                                   <span class="osta-hl-string">"</span><span class="osta-hl-string"><span class="osta-hl-regexp-grouping-backslash">\\</span></span><span class="osta-hl-string"><span class="osta-hl-regexp-grouping-construct">(?:</span></span><span class="osta-hl-string">[.]</span><span class="osta-hl-string"><span class="osta-hl-regexp-grouping-backslash">\\</span></span><span class="osta-hl-string"><span class="osta-hl-regexp-grouping-construct">(</span></span><span class="osta-hl-string">[</span><span class="osta-hl-string"><span class="osta-hl-negation-char">^</span></span><span class="osta-hl-string"> /]+</span><span class="osta-hl-string"><span class="osta-hl-regexp-grouping-backslash">\\</span></span><span class="osta-hl-string"><span class="osta-hl-regexp-grouping-construct">)</span></span><span class="osta-hl-string"><span class="osta-hl-regexp-grouping-backslash">\\</span></span><span class="osta-hl-string"><span class="osta-hl-regexp-grouping-construct">)</span></span><span class="osta-hl-string">?"</span>)
+            ((string-match (concat <span class="one-hl-string">"</span><span class="one-hl-string"><span class="one-hl-regexp-grouping-backslash">\\</span></span><span class="one-hl-string"><span class="one-hl-regexp-grouping-construct">(?:</span></span><span class="one-hl-string">:</span><span class="one-hl-string"><span class="one-hl-regexp-grouping-backslash">\\</span></span><span class="one-hl-string"><span class="one-hl-regexp-grouping-construct">)</span></span><span class="one-hl-string"><span class="one-hl-regexp-grouping-backslash">\\</span></span><span class="one-hl-string"><span class="one-hl-regexp-grouping-construct">(</span></span><span class="one-hl-string">[</span><span class="one-hl-string"><span class="one-hl-negation-char">^</span></span><span class="one-hl-string"> /.]+</span><span class="one-hl-string"><span class="one-hl-regexp-grouping-backslash">\\</span></span><span class="one-hl-string"><span class="one-hl-regexp-grouping-construct">)</span></span><span class="one-hl-string">"</span>
+                                   <span class="one-hl-string">"</span><span class="one-hl-string"><span class="one-hl-regexp-grouping-backslash">\\</span></span><span class="one-hl-string"><span class="one-hl-regexp-grouping-construct">(?:</span></span><span class="one-hl-string">/</span><span class="one-hl-string"><span class="one-hl-regexp-grouping-backslash">\\</span></span><span class="one-hl-string"><span class="one-hl-regexp-grouping-construct">(</span></span><span class="one-hl-string">[</span><span class="one-hl-string"><span class="one-hl-negation-char">^</span></span><span class="one-hl-string"> /.]+</span><span class="one-hl-string"><span class="one-hl-regexp-grouping-backslash">\\</span></span><span class="one-hl-string"><span class="one-hl-regexp-grouping-construct">)</span></span><span class="one-hl-string"><span class="one-hl-regexp-grouping-backslash">\\</span></span><span class="one-hl-string"><span class="one-hl-regexp-grouping-construct">)</span></span><span class="one-hl-string">?"</span>
+                                   <span class="one-hl-string">"</span><span class="one-hl-string"><span class="one-hl-regexp-grouping-backslash">\\</span></span><span class="one-hl-string"><span class="one-hl-regexp-grouping-construct">(?:</span></span><span class="one-hl-string">[.]</span><span class="one-hl-string"><span class="one-hl-regexp-grouping-backslash">\\</span></span><span class="one-hl-string"><span class="one-hl-regexp-grouping-construct">(</span></span><span class="one-hl-string">[</span><span class="one-hl-string"><span class="one-hl-negation-char">^</span></span><span class="one-hl-string"> /]+</span><span class="one-hl-string"><span class="one-hl-regexp-grouping-backslash">\\</span></span><span class="one-hl-string"><span class="one-hl-regexp-grouping-construct">)</span></span><span class="one-hl-string"><span class="one-hl-regexp-grouping-backslash">\\</span></span><span class="one-hl-string"><span class="one-hl-regexp-grouping-construct">)</span></span><span class="one-hl-string">?"</span>)
                            tag-s)))
-      (<span class="osta-hl-keyword">let*</span> ((tag (match-string 1 tag-s))
+      (<span class="one-hl-keyword">let*</span> ((tag (match-string 1 tag-s))
              (id (match-string 2 tag-s))
              (class (match-string 3 tag-s))
-             (classes (<span class="osta-hl-keyword">and</span> class (string-replace <span class="osta-hl-string">"."</span> <span class="osta-hl-string">" "</span> class))))
-        (<span class="osta-hl-keyword">if</span> (<span class="osta-hl-keyword">or</span> tag id classes)
+             (classes (<span class="one-hl-keyword">and</span> class (string-replace <span class="one-hl-string">"."</span> <span class="one-hl-string">" "</span> class))))
+        (<span class="one-hl-keyword">if</span> (<span class="one-hl-keyword">or</span> tag id classes)
             (list tag id classes)
-          (<span class="osta-hl-warning">error</span> <span class="osta-hl-string">"Wrong tag keyword: %S"</span> tag-kw)))
-    (<span class="osta-hl-warning">error</span> <span class="osta-hl-string">"Wrong tag keyword: %S"</span> tag-kw)))
+          (<span class="one-hl-warning">error</span> <span class="one-hl-string">"Wrong tag keyword: %S"</span> tag-kw)))
+    (<span class="one-hl-warning">error</span> <span class="one-hl-string">"Wrong tag keyword: %S"</span> tag-kw)))
 
-(<span class="osta-hl-keyword">defun</span> <span class="osta-hl-function-name">osta-format-REC</span> (tag-kw <span class="osta-hl-type">&amp;optional</span> attributes)
-  <span class="osta-hl-doc">""</span>
-  (<span class="osta-hl-keyword">let</span> ((void-tags '(<span class="osta-hl-string">"area"</span> <span class="osta-hl-string">"base"</span> <span class="osta-hl-string">"br"</span> <span class="osta-hl-string">"col"</span> <span class="osta-hl-string">"embed"</span> <span class="osta-hl-string">"hr"</span> <span class="osta-hl-string">"img"</span> <span class="osta-hl-string">"input"</span>   <span class="osta-hl-comment-delimiter">; </span><span class="osta-hl-comment">https://developer.mozilla.org/en-US/docs/Glossary/Empty_element</span>
-                     <span class="osta-hl-string">"keygen"</span> <span class="osta-hl-string">"link"</span> <span class="osta-hl-string">"meta"</span> <span class="osta-hl-string">"param"</span> <span class="osta-hl-string">"source"</span> <span class="osta-hl-string">"track"</span> <span class="osta-hl-string">"wbr"</span>)))
-    (<span class="osta-hl-keyword">seq-let</span> (tag id classes) (osta-parse-tag-kw-REC tag-kw)
-      (<span class="osta-hl-keyword">let*</span> ((fmt (<span class="osta-hl-keyword">if</span> (member tag void-tags) <span class="osta-hl-string">"&lt;%s%s /&gt;"</span> <span class="osta-hl-string">"&lt;%s%s&gt;%%s&lt;/%s&gt;"</span>))
-             (kw-&gt;a (<span class="osta-hl-keyword">lambda</span> (kw) (substring (symbol-name kw) 1))) <span class="osta-hl-comment-delimiter">; </span><span class="osta-hl-comment">:id -&gt; "id"</span>
-             (p-&gt;a-v                                              <span class="osta-hl-comment-delimiter">; </span><span class="osta-hl-comment">(:id "foo") -&gt; "id=\"foo\""</span>
-              (<span class="osta-hl-keyword">lambda</span> (p)
-                (<span class="osta-hl-keyword">let</span> ((attr (funcall kw-&gt;a (car p))))
-                  (<span class="osta-hl-keyword">pcase</span> (eval (cadr p))
-                    ('t (format <span class="osta-hl-string">"%s=\"%s\""</span> attr attr))
+(<span class="one-hl-keyword">defun</span> <span class="one-hl-function-name">osta-format-REC</span> (tag-kw <span class="one-hl-type">&amp;optional</span> attributes)
+  <span class="one-hl-doc">""</span>
+  (<span class="one-hl-keyword">let</span> ((void-tags '(<span class="one-hl-string">"area"</span> <span class="one-hl-string">"base"</span> <span class="one-hl-string">"br"</span> <span class="one-hl-string">"col"</span> <span class="one-hl-string">"embed"</span> <span class="one-hl-string">"hr"</span> <span class="one-hl-string">"img"</span> <span class="one-hl-string">"input"</span>   <span class="one-hl-comment-delimiter">; </span><span class="one-hl-comment">https://developer.mozilla.org/en-US/docs/Glossary/Empty_element
+</span>                     <span class="one-hl-string">"keygen"</span> <span class="one-hl-string">"link"</span> <span class="one-hl-string">"meta"</span> <span class="one-hl-string">"param"</span> <span class="one-hl-string">"source"</span> <span class="one-hl-string">"track"</span> <span class="one-hl-string">"wbr"</span>)))
+    (<span class="one-hl-keyword">seq-let</span> (tag id classes) (osta-parse-tag-kw-REC tag-kw)
+      (<span class="one-hl-keyword">let*</span> ((fmt (<span class="one-hl-keyword">if</span> (member tag void-tags) <span class="one-hl-string">"&lt;%s%s /&gt;"</span> <span class="one-hl-string">"&lt;%s%s&gt;%%s&lt;/%s&gt;"</span>))
+             (kw-&gt;a (<span class="one-hl-keyword">lambda</span> (kw) (substring (symbol-name kw) 1))) <span class="one-hl-comment-delimiter">; </span><span class="one-hl-comment">:id -&gt; "id"
+</span>             (p-&gt;a-v                                              <span class="one-hl-comment-delimiter">; </span><span class="one-hl-comment">(:id "foo") -&gt; "id=\"foo\""
+</span>              (<span class="one-hl-keyword">lambda</span> (p)
+                (<span class="one-hl-keyword">let</span> ((attr (funcall kw-&gt;a (car p))))
+                  (<span class="one-hl-keyword">pcase</span> (eval (cadr p))
+                    ('t (format <span class="one-hl-string">"%s=\"%s\""</span> attr attr))
                     ('nil nil)
-                    ((<span class="osta-hl-keyword">and</span> _ value) (format <span class="osta-hl-string">"%s=\"%s\""</span> attr (osta-escape value)))))))
+                    ((<span class="one-hl-keyword">and</span> _ value) (format <span class="one-hl-string">"%s=\"%s\""</span> attr (osta-escape value)))))))
              (pairs (seq-partition attributes 2))
-             <span class="osta-hl-comment-delimiter">;; </span><span class="osta-hl-comment">we merge classes from `</span><span class="osta-hl-comment"><span class="osta-hl-constant">tag-kw</span></span><span class="osta-hl-comment">' and `</span><span class="osta-hl-comment"><span class="osta-hl-constant">attribute</span></span><span class="osta-hl-comment">' and add it to the pairs</span>
-             (-pairs (<span class="osta-hl-keyword">if</span> classes
-                         (<span class="osta-hl-keyword">if-let*</span> ((c (assoc <span class="osta-hl-ta-colon-keyword">:class</span> pairs)))
-                             (<span class="osta-hl-keyword">let*</span> ((pairs-without-class
+             <span class="one-hl-comment-delimiter">;; </span><span class="one-hl-comment">we merge classes from `</span><span class="one-hl-comment"><span class="one-hl-constant">tag-kw</span></span><span class="one-hl-comment">' and `</span><span class="one-hl-comment"><span class="one-hl-constant">attribute</span></span><span class="one-hl-comment">' and add it to the pairs
+</span>             (-pairs (<span class="one-hl-keyword">if</span> classes
+                         (<span class="one-hl-keyword">if-let*</span> ((c (assoc <span class="one-hl-ta-colon-keyword">:class</span> pairs)))
+                             (<span class="one-hl-keyword">let*</span> ((pairs-without-class
                                      (seq-remove
-                                      (<span class="osta-hl-keyword">lambda</span> (p) (eq (car p) <span class="osta-hl-ta-colon-keyword">:class</span>)) pairs))
+                                      (<span class="one-hl-keyword">lambda</span> (p) (eq (car p) <span class="one-hl-ta-colon-keyword">:class</span>)) pairs))
                                     (class-value-in-pairs (cadr c))
-                                    (class `(<span class="osta-hl-ta-colon-keyword">:class</span> ,(concat classes <span class="osta-hl-string">" "</span> class-value-in-pairs))))
+                                    (class `(<span class="one-hl-ta-colon-keyword">:class</span> ,(concat classes <span class="one-hl-string">" "</span> class-value-in-pairs))))
                                (cons class pairs-without-class))
-                           (cons `(<span class="osta-hl-ta-colon-keyword">:class</span> ,classes) pairs))
+                           (cons `(<span class="one-hl-ta-colon-keyword">:class</span> ,classes) pairs))
                        pairs))
-             <span class="osta-hl-comment-delimiter">;; </span><span class="osta-hl-comment">`</span><span class="osta-hl-comment"><span class="osta-hl-constant">id</span></span><span class="osta-hl-comment">' in `</span><span class="osta-hl-comment"><span class="osta-hl-constant">attributes</span></span><span class="osta-hl-comment">' has priority over `</span><span class="osta-hl-comment"><span class="osta-hl-constant">id</span></span><span class="osta-hl-comment">' in `</span><span class="osta-hl-comment"><span class="osta-hl-constant">tag-kw</span></span><span class="osta-hl-comment">'</span>
-             (--pairs (<span class="osta-hl-keyword">if</span> (<span class="osta-hl-keyword">and</span> id (not (assoc <span class="osta-hl-ta-colon-keyword">:id</span> -pairs)))
-                          (cons `(<span class="osta-hl-ta-colon-keyword">:id</span> ,id) -pairs)
+             <span class="one-hl-comment-delimiter">;; </span><span class="one-hl-comment">`</span><span class="one-hl-comment"><span class="one-hl-constant">id</span></span><span class="one-hl-comment">' in `</span><span class="one-hl-comment"><span class="one-hl-constant">attributes</span></span><span class="one-hl-comment">' has priority over `</span><span class="one-hl-comment"><span class="one-hl-constant">id</span></span><span class="one-hl-comment">' in `</span><span class="one-hl-comment"><span class="one-hl-constant">tag-kw</span></span><span class="one-hl-comment">'
+</span>             (--pairs (<span class="one-hl-keyword">if</span> (<span class="one-hl-keyword">and</span> id (not (assoc <span class="one-hl-ta-colon-keyword">:id</span> -pairs)))
+                          (cons `(<span class="one-hl-ta-colon-keyword">:id</span> ,id) -pairs)
                         -pairs))
-             (attrs (string-join (delq nil (mapcar p-&gt;a-v --pairs)) <span class="osta-hl-string">" "</span>))
-             (-attrs (<span class="osta-hl-keyword">if</span> (string-empty-p attrs) <span class="osta-hl-string">""</span> (concat <span class="osta-hl-string">" "</span> attrs))))
+             (attrs (string-join (delq nil (mapcar p-&gt;a-v --pairs)) <span class="one-hl-string">" "</span>))
+             (-attrs (<span class="one-hl-keyword">if</span> (string-empty-p attrs) <span class="one-hl-string">""</span> (concat <span class="one-hl-string">" "</span> attrs))))
         (format fmt tag -attrs tag)))))
 
-(<span class="osta-hl-keyword">defun</span> <span class="osta-hl-function-name">osta-html-REC</span> (<span class="osta-hl-type">&amp;rest</span> components)
-  <span class="osta-hl-doc">""</span>
-  (<span class="osta-hl-keyword">let</span> (children)
-    (<span class="osta-hl-keyword">pcase</span> (car components)
-      ((<span class="osta-hl-keyword">and</span> 'nil (guard (null (cdr components)))) <span class="osta-hl-string">""</span>)
-      <span class="osta-hl-comment-delimiter">;; </span><span class="osta-hl-comment">(car components) is a string component or an integer component</span>
-      ((<span class="osta-hl-keyword">and</span> (<span class="osta-hl-keyword">or</span> (pred stringp) (pred numberp)) component)
-       (<span class="osta-hl-keyword">push</span> (format <span class="osta-hl-string">"%s"</span> component) children)
-       (<span class="osta-hl-keyword">push</span> (apply #'osta-html-REC (cdr components)) children))
-      <span class="osta-hl-comment-delimiter">;; </span><span class="osta-hl-comment">(car components) is not a tag component but a list of components</span>
-      <span class="osta-hl-comment-delimiter">;; </span><span class="osta-hl-comment">like this '((:p "foo") "bar" 1)</span>
-      ((<span class="osta-hl-keyword">and</span> (pred listp) l (guard (not (keywordp (car l)))))
-       (<span class="osta-hl-keyword">let</span> ((-components (append l (cdr components))))
-         (<span class="osta-hl-keyword">push</span> (apply #'osta-html-REC -components) children)))
-      ((<span class="osta-hl-keyword">and</span> (pred listp) component)
-       (<span class="osta-hl-keyword">seq-let</span> (tag-kw attr-or-comp comp) component
-         (<span class="osta-hl-keyword">pcase</span> attr-or-comp
-           <span class="osta-hl-comment-delimiter">;; </span><span class="osta-hl-comment">empty component like '(:p)</span>
-           ('nil
-             (<span class="osta-hl-keyword">push</span> (format (osta-format-REC tag-kw) (apply #'osta-html-REC nil)) children))
-           <span class="osta-hl-comment-delimiter">;; </span><span class="osta-hl-comment">attr-or-comp is attributes plist like '(@ :id "id" :class "class")</span>
-           ((<span class="osta-hl-keyword">and</span> (pred listp) (pred (<span class="osta-hl-keyword">lambda</span> (l) (equal (car l) '@))))
-            (<span class="osta-hl-keyword">let</span> ((-components (cddr component))
+(<span class="one-hl-keyword">defun</span> <span class="one-hl-function-name">osta-html-REC</span> (<span class="one-hl-type">&amp;rest</span> components)
+  <span class="one-hl-doc">""</span>
+  (<span class="one-hl-keyword">let</span> (children)
+    (<span class="one-hl-keyword">pcase</span> (car components)
+      ((<span class="one-hl-keyword">and</span> 'nil (guard (null (cdr components)))) <span class="one-hl-string">""</span>)
+      <span class="one-hl-comment-delimiter">;; </span><span class="one-hl-comment">(car components) is a string component or an integer component
+</span>      ((<span class="one-hl-keyword">and</span> (<span class="one-hl-keyword">or</span> (pred stringp) (pred numberp)) component)
+       (<span class="one-hl-keyword">push</span> (format <span class="one-hl-string">"%s"</span> component) children)
+       (<span class="one-hl-keyword">push</span> (apply #'osta-html-REC (cdr components)) children))
+      <span class="one-hl-comment-delimiter">;; </span><span class="one-hl-comment">(car components) is not a tag component but a list of components
+</span>      <span class="one-hl-comment-delimiter">;; </span><span class="one-hl-comment">like this '((:p "foo") "bar" 1)
+</span>      ((<span class="one-hl-keyword">and</span> (pred listp) l (guard (not (keywordp (car l)))))
+       (<span class="one-hl-keyword">let</span> ((-components (append l (cdr components))))
+         (<span class="one-hl-keyword">push</span> (apply #'osta-html-REC -components) children)))
+      ((<span class="one-hl-keyword">and</span> (pred listp) component)
+       (<span class="one-hl-keyword">seq-let</span> (tag-kw attr-or-comp comp) component
+         (<span class="one-hl-keyword">pcase</span> attr-or-comp
+           <span class="one-hl-comment-delimiter">;; </span><span class="one-hl-comment">empty component like '(:p)
+</span>           ('nil
+             (<span class="one-hl-keyword">push</span> (format (osta-format-REC tag-kw) (apply #'osta-html-REC nil)) children))
+           <span class="one-hl-comment-delimiter">;; </span><span class="one-hl-comment">attr-or-comp is attributes plist like '(@ :id "id" :class "class")
+</span>           ((<span class="one-hl-keyword">and</span> (pred listp) (pred (<span class="one-hl-keyword">lambda</span> (l) (equal (car l) '@))))
+            (<span class="one-hl-keyword">let</span> ((-components (cddr component))
                   (fmt (osta-format-REC tag-kw (cdr attr-or-comp))))
-              (<span class="osta-hl-keyword">push</span> (format fmt (apply #'osta-html-REC -components)) children)))
-           (_ (<span class="osta-hl-keyword">let</span> ((-components (cdr component))
+              (<span class="one-hl-keyword">push</span> (format fmt (apply #'osta-html-REC -components)) children)))
+           (_ (<span class="one-hl-keyword">let</span> ((-components (cdr component))
                     (fmt (osta-format-REC tag-kw)))
-                (<span class="osta-hl-keyword">push</span> (format fmt (apply #'osta-html-REC -components)) children)))))
-       (<span class="osta-hl-keyword">push</span> (apply #'osta-html-REC (cdr components)) children))
-      ((<span class="osta-hl-keyword">and</span> _ obj)
-       (<span class="osta-hl-keyword">when</span> osta-html-raise-error-p-REC
-         (<span class="osta-hl-warning">error</span> <span class="osta-hl-string">"Object '%S' of type '%s' can't be a component in 'osta-html-REC'"</span>
+                (<span class="one-hl-keyword">push</span> (format fmt (apply #'osta-html-REC -components)) children)))))
+       (<span class="one-hl-keyword">push</span> (apply #'osta-html-REC (cdr components)) children))
+      ((<span class="one-hl-keyword">and</span> _ obj)
+       (<span class="one-hl-keyword">when</span> osta-html-raise-error-p-REC
+         (<span class="one-hl-warning">error</span> <span class="one-hl-string">"Object '</span><span class="one-hl-string"><span class="one-hl-constant">%S</span></span><span class="one-hl-string">' of type '</span><span class="one-hl-string"><span class="one-hl-constant">%s</span></span><span class="one-hl-string">' can't be a component in '</span><span class="one-hl-string"><span class="one-hl-constant">osta-html-REC</span></span><span class="one-hl-string">'"</span>
                 obj (type-of obj)))
-       (<span class="osta-hl-keyword">push</span> (apply #'osta-html-REC (cdr components)) children)))
+       (<span class="one-hl-keyword">push</span> (apply #'osta-html-REC (cdr components)) children)))
     (apply #'concat (nreverse children))))</code></pre>
-          </div>
-        </div>
+</div>
+</div>
 
-        <div>
-          <h2>
-            <code class="osta-hl osta-hl-inline">osta-html-ITER</code>
-            (iterative implementation of
-            <code class="osta-hl osta-hl-inline">osta-html</code>)
-          </h2>
-          <div>
-            <pre><code class="osta-hl osta-hl-block"><span class="osta-hl-comment-delimiter">;; </span><span class="osta-hl-comment">commit cd43e0bc6d2bf7affcc1fce0b071fa8f3f1978c0</span>
-<span class="osta-hl-comment-delimiter">;; </span><span class="osta-hl-comment">Author: tony <a href="mailto:tony.aldon.adm%40gmail.com">&lt;tony.aldon.adm@gmail.com&gt;</a></span>
-<span class="osta-hl-comment-delimiter">;; </span><span class="osta-hl-comment">Date:   Mon Feb 7 10:51:35 2022 +0100</span>
+<div><h2 id="one-7aabc4e8e6">~osta-html-ITER~ (iterative implementation of ~osta-html~)</h2><div><pre><code class="one-hl one-hl-block"><span class="one-hl-comment-delimiter">;; </span><span class="one-hl-comment">commit cd43e0bc6d2bf7affcc1fce0b071fa8f3f1978c0
+</span><span class="one-hl-comment-delimiter">;; </span><span class="one-hl-comment">Author: tony <a href="mailto:tony.aldon.adm%40gmail.com">&lt;tony.aldon.adm@gmail.com&gt;</a>
+</span><span class="one-hl-comment-delimiter">;; </span><span class="one-hl-comment">Date:   Mon Feb 7 10:51:35 2022 +0100
+</span>
+(<span class="one-hl-keyword">defvar</span> <span class="one-hl-variable-name">osta-html-raise-error-p-ITER</span> nil <span class="one-hl-doc">""</span>)
 
-(<span class="osta-hl-keyword">defvar</span> <span class="osta-hl-variable-name">osta-html-raise-error-p-ITER</span> nil <span class="osta-hl-doc">""</span>)
-
-(<span class="osta-hl-keyword">defun</span> <span class="osta-hl-function-name">osta-parse-tag-kw-ITER</span> (tag-kw)
-  <span class="osta-hl-doc">"Return a list of (\"tag\" \"id\" \"class\") from a TAG-KW."</span>
-  (<span class="osta-hl-keyword">if-let*</span> (((keywordp tag-kw))
+(<span class="one-hl-keyword">defun</span> <span class="one-hl-function-name">osta-parse-tag-kw-ITER</span> (tag-kw)
+  <span class="one-hl-doc">"Return a list of (\"tag\" \"id\" \"class\") from a TAG-KW."</span>
+  (<span class="one-hl-keyword">if-let*</span> (((keywordp tag-kw))
             (tag-s (symbol-name tag-kw))
-            ((string-match (concat <span class="osta-hl-string">"</span><span class="osta-hl-string"><span class="osta-hl-regexp-grouping-backslash">\\</span></span><span class="osta-hl-string"><span class="osta-hl-regexp-grouping-construct">(?:</span></span><span class="osta-hl-string">:</span><span class="osta-hl-string"><span class="osta-hl-regexp-grouping-backslash">\\</span></span><span class="osta-hl-string"><span class="osta-hl-regexp-grouping-construct">)</span></span><span class="osta-hl-string"><span class="osta-hl-regexp-grouping-backslash">\\</span></span><span class="osta-hl-string"><span class="osta-hl-regexp-grouping-construct">(</span></span><span class="osta-hl-string">[</span><span class="osta-hl-string"><span class="osta-hl-negation-char">^</span></span><span class="osta-hl-string"> /.]+</span><span class="osta-hl-string"><span class="osta-hl-regexp-grouping-backslash">\\</span></span><span class="osta-hl-string"><span class="osta-hl-regexp-grouping-construct">)</span></span><span class="osta-hl-string">"</span>
-                                   <span class="osta-hl-string">"</span><span class="osta-hl-string"><span class="osta-hl-regexp-grouping-backslash">\\</span></span><span class="osta-hl-string"><span class="osta-hl-regexp-grouping-construct">(?:</span></span><span class="osta-hl-string">/</span><span class="osta-hl-string"><span class="osta-hl-regexp-grouping-backslash">\\</span></span><span class="osta-hl-string"><span class="osta-hl-regexp-grouping-construct">(</span></span><span class="osta-hl-string">[</span><span class="osta-hl-string"><span class="osta-hl-negation-char">^</span></span><span class="osta-hl-string"> /.]+</span><span class="osta-hl-string"><span class="osta-hl-regexp-grouping-backslash">\\</span></span><span class="osta-hl-string"><span class="osta-hl-regexp-grouping-construct">)</span></span><span class="osta-hl-string"><span class="osta-hl-regexp-grouping-backslash">\\</span></span><span class="osta-hl-string"><span class="osta-hl-regexp-grouping-construct">)</span></span><span class="osta-hl-string">?"</span>
-                                   <span class="osta-hl-string">"</span><span class="osta-hl-string"><span class="osta-hl-regexp-grouping-backslash">\\</span></span><span class="osta-hl-string"><span class="osta-hl-regexp-grouping-construct">(?:</span></span><span class="osta-hl-string">[.]</span><span class="osta-hl-string"><span class="osta-hl-regexp-grouping-backslash">\\</span></span><span class="osta-hl-string"><span class="osta-hl-regexp-grouping-construct">(</span></span><span class="osta-hl-string">[</span><span class="osta-hl-string"><span class="osta-hl-negation-char">^</span></span><span class="osta-hl-string"> /]+</span><span class="osta-hl-string"><span class="osta-hl-regexp-grouping-backslash">\\</span></span><span class="osta-hl-string"><span class="osta-hl-regexp-grouping-construct">)</span></span><span class="osta-hl-string"><span class="osta-hl-regexp-grouping-backslash">\\</span></span><span class="osta-hl-string"><span class="osta-hl-regexp-grouping-construct">)</span></span><span class="osta-hl-string">?"</span>)
+            ((string-match (concat <span class="one-hl-string">"</span><span class="one-hl-string"><span class="one-hl-regexp-grouping-backslash">\\</span></span><span class="one-hl-string"><span class="one-hl-regexp-grouping-construct">(?:</span></span><span class="one-hl-string">:</span><span class="one-hl-string"><span class="one-hl-regexp-grouping-backslash">\\</span></span><span class="one-hl-string"><span class="one-hl-regexp-grouping-construct">)</span></span><span class="one-hl-string"><span class="one-hl-regexp-grouping-backslash">\\</span></span><span class="one-hl-string"><span class="one-hl-regexp-grouping-construct">(</span></span><span class="one-hl-string">[</span><span class="one-hl-string"><span class="one-hl-negation-char">^</span></span><span class="one-hl-string"> /.]+</span><span class="one-hl-string"><span class="one-hl-regexp-grouping-backslash">\\</span></span><span class="one-hl-string"><span class="one-hl-regexp-grouping-construct">)</span></span><span class="one-hl-string">"</span>
+                                   <span class="one-hl-string">"</span><span class="one-hl-string"><span class="one-hl-regexp-grouping-backslash">\\</span></span><span class="one-hl-string"><span class="one-hl-regexp-grouping-construct">(?:</span></span><span class="one-hl-string">/</span><span class="one-hl-string"><span class="one-hl-regexp-grouping-backslash">\\</span></span><span class="one-hl-string"><span class="one-hl-regexp-grouping-construct">(</span></span><span class="one-hl-string">[</span><span class="one-hl-string"><span class="one-hl-negation-char">^</span></span><span class="one-hl-string"> /.]+</span><span class="one-hl-string"><span class="one-hl-regexp-grouping-backslash">\\</span></span><span class="one-hl-string"><span class="one-hl-regexp-grouping-construct">)</span></span><span class="one-hl-string"><span class="one-hl-regexp-grouping-backslash">\\</span></span><span class="one-hl-string"><span class="one-hl-regexp-grouping-construct">)</span></span><span class="one-hl-string">?"</span>
+                                   <span class="one-hl-string">"</span><span class="one-hl-string"><span class="one-hl-regexp-grouping-backslash">\\</span></span><span class="one-hl-string"><span class="one-hl-regexp-grouping-construct">(?:</span></span><span class="one-hl-string">[.]</span><span class="one-hl-string"><span class="one-hl-regexp-grouping-backslash">\\</span></span><span class="one-hl-string"><span class="one-hl-regexp-grouping-construct">(</span></span><span class="one-hl-string">[</span><span class="one-hl-string"><span class="one-hl-negation-char">^</span></span><span class="one-hl-string"> /]+</span><span class="one-hl-string"><span class="one-hl-regexp-grouping-backslash">\\</span></span><span class="one-hl-string"><span class="one-hl-regexp-grouping-construct">)</span></span><span class="one-hl-string"><span class="one-hl-regexp-grouping-backslash">\\</span></span><span class="one-hl-string"><span class="one-hl-regexp-grouping-construct">)</span></span><span class="one-hl-string">?"</span>)
                            tag-s)))
-      (<span class="osta-hl-keyword">let*</span> ((tag (match-string 1 tag-s))
+      (<span class="one-hl-keyword">let*</span> ((tag (match-string 1 tag-s))
              (id (match-string 2 tag-s))
              (class (match-string 3 tag-s))
-             (classes (<span class="osta-hl-keyword">and</span> class (string-replace <span class="osta-hl-string">"."</span> <span class="osta-hl-string">" "</span> class))))
-        (<span class="osta-hl-keyword">if</span> (<span class="osta-hl-keyword">or</span> tag id classes)
+             (classes (<span class="one-hl-keyword">and</span> class (string-replace <span class="one-hl-string">"."</span> <span class="one-hl-string">" "</span> class))))
+        (<span class="one-hl-keyword">if</span> (<span class="one-hl-keyword">or</span> tag id classes)
             (list tag id classes)
-          (<span class="osta-hl-warning">error</span> <span class="osta-hl-string">"Wrong tag keyword: %S"</span> tag-kw)))
-    (<span class="osta-hl-warning">error</span> <span class="osta-hl-string">"Wrong tag keyword: %S"</span> tag-kw)))
+          (<span class="one-hl-warning">error</span> <span class="one-hl-string">"Wrong tag keyword: %S"</span> tag-kw)))
+    (<span class="one-hl-warning">error</span> <span class="one-hl-string">"Wrong tag keyword: %S"</span> tag-kw)))
 
-(<span class="osta-hl-keyword">defun</span> <span class="osta-hl-function-name">osta-tag-ITER</span> (tag-kw <span class="osta-hl-type">&amp;optional</span> attributes)
-  <span class="osta-hl-doc">"Return a plist describing the type of TAG-KW and its ATTRIBUTES."</span>
-  (<span class="osta-hl-keyword">let</span> ((void-tags '(<span class="osta-hl-string">"area"</span> <span class="osta-hl-string">"base"</span> <span class="osta-hl-string">"br"</span> <span class="osta-hl-string">"col"</span> <span class="osta-hl-string">"embed"</span> <span class="osta-hl-string">"hr"</span> <span class="osta-hl-string">"img"</span> <span class="osta-hl-string">"input"</span>   <span class="osta-hl-comment-delimiter">; </span><span class="osta-hl-comment">https://developer.mozilla.org/en-US/docs/Glossary/Empty_element</span>
-                     <span class="osta-hl-string">"keygen"</span> <span class="osta-hl-string">"link"</span> <span class="osta-hl-string">"meta"</span> <span class="osta-hl-string">"param"</span> <span class="osta-hl-string">"source"</span> <span class="osta-hl-string">"track"</span> <span class="osta-hl-string">"wbr"</span>)))
-    (<span class="osta-hl-keyword">seq-let</span> (tag id classes) (osta-parse-tag-kw-ITER tag-kw)
-      (<span class="osta-hl-keyword">let*</span> ((kw-&gt;a (<span class="osta-hl-keyword">lambda</span> (kw) (substring (symbol-name kw) 1))) <span class="osta-hl-comment-delimiter">; </span><span class="osta-hl-comment">:id -&gt; "id"</span>
-             (p-&gt;a-v                                              <span class="osta-hl-comment-delimiter">; </span><span class="osta-hl-comment">(:id "foo") -&gt; "id=\"foo\""</span>
-              (<span class="osta-hl-keyword">lambda</span> (p)
-                (<span class="osta-hl-keyword">let</span> ((attr (funcall kw-&gt;a (car p))))
-                  (<span class="osta-hl-keyword">pcase</span> (eval (cadr p))
-                    ('t (concat attr <span class="osta-hl-string">"=\""</span>  attr <span class="osta-hl-string">"\""</span>))
+(<span class="one-hl-keyword">defun</span> <span class="one-hl-function-name">osta-tag-ITER</span> (tag-kw <span class="one-hl-type">&amp;optional</span> attributes)
+  <span class="one-hl-doc">"Return a plist describing the type of TAG-KW and its ATTRIBUTES."</span>
+  (<span class="one-hl-keyword">let</span> ((void-tags '(<span class="one-hl-string">"area"</span> <span class="one-hl-string">"base"</span> <span class="one-hl-string">"br"</span> <span class="one-hl-string">"col"</span> <span class="one-hl-string">"embed"</span> <span class="one-hl-string">"hr"</span> <span class="one-hl-string">"img"</span> <span class="one-hl-string">"input"</span>   <span class="one-hl-comment-delimiter">; </span><span class="one-hl-comment">https://developer.mozilla.org/en-US/docs/Glossary/Empty_element
+</span>                     <span class="one-hl-string">"keygen"</span> <span class="one-hl-string">"link"</span> <span class="one-hl-string">"meta"</span> <span class="one-hl-string">"param"</span> <span class="one-hl-string">"source"</span> <span class="one-hl-string">"track"</span> <span class="one-hl-string">"wbr"</span>)))
+    (<span class="one-hl-keyword">seq-let</span> (tag id classes) (osta-parse-tag-kw-ITER tag-kw)
+      (<span class="one-hl-keyword">let*</span> ((kw-&gt;a (<span class="one-hl-keyword">lambda</span> (kw) (substring (symbol-name kw) 1))) <span class="one-hl-comment-delimiter">; </span><span class="one-hl-comment">:id -&gt; "id"
+</span>             (p-&gt;a-v                                              <span class="one-hl-comment-delimiter">; </span><span class="one-hl-comment">(:id "foo") -&gt; "id=\"foo\""
+</span>              (<span class="one-hl-keyword">lambda</span> (p)
+                (<span class="one-hl-keyword">let</span> ((attr (funcall kw-&gt;a (car p))))
+                  (<span class="one-hl-keyword">pcase</span> (eval (cadr p))
+                    ('t (concat attr <span class="one-hl-string">"=\""</span>  attr <span class="one-hl-string">"\""</span>))
                     ('nil nil)
-                    ((<span class="osta-hl-keyword">and</span> _ value)
-                     (concat attr <span class="osta-hl-string">"=\""</span> (osta-escape value) <span class="osta-hl-string">"\""</span>))))))
+                    ((<span class="one-hl-keyword">and</span> _ value)
+                     (concat attr <span class="one-hl-string">"=\""</span> (osta-escape value) <span class="one-hl-string">"\""</span>))))))
              (pairs (seq-partition attributes 2))
-             <span class="osta-hl-comment-delimiter">;; </span><span class="osta-hl-comment">we merge classes from `</span><span class="osta-hl-comment"><span class="osta-hl-constant">tag-kw</span></span><span class="osta-hl-comment">' and `</span><span class="osta-hl-comment"><span class="osta-hl-constant">attributes</span></span><span class="osta-hl-comment">' and add it to the pairs</span>
-             (-pairs (<span class="osta-hl-keyword">if</span> classes
-                         (<span class="osta-hl-keyword">if-let*</span> ((c (assoc <span class="osta-hl-ta-colon-keyword">:class</span> pairs)))
-                             (<span class="osta-hl-keyword">let*</span> ((pairs-without-class
+             <span class="one-hl-comment-delimiter">;; </span><span class="one-hl-comment">we merge classes from `</span><span class="one-hl-comment"><span class="one-hl-constant">tag-kw</span></span><span class="one-hl-comment">' and `</span><span class="one-hl-comment"><span class="one-hl-constant">attributes</span></span><span class="one-hl-comment">' and add it to the pairs
+</span>             (-pairs (<span class="one-hl-keyword">if</span> classes
+                         (<span class="one-hl-keyword">if-let*</span> ((c (assoc <span class="one-hl-ta-colon-keyword">:class</span> pairs)))
+                             (<span class="one-hl-keyword">let*</span> ((pairs-without-class
                                      (seq-remove
-                                      (<span class="osta-hl-keyword">lambda</span> (p) (eq (car p) <span class="osta-hl-ta-colon-keyword">:class</span>)) pairs))
+                                      (<span class="one-hl-keyword">lambda</span> (p) (eq (car p) <span class="one-hl-ta-colon-keyword">:class</span>)) pairs))
                                     (class-value-in-pairs (cadr c))
-                                    (class `(<span class="osta-hl-ta-colon-keyword">:class</span> ,(concat classes <span class="osta-hl-string">" "</span> class-value-in-pairs))))
+                                    (class `(<span class="one-hl-ta-colon-keyword">:class</span> ,(concat classes <span class="one-hl-string">" "</span> class-value-in-pairs))))
                                (cons class pairs-without-class))
-                           (cons `(<span class="osta-hl-ta-colon-keyword">:class</span> ,classes) pairs))
+                           (cons `(<span class="one-hl-ta-colon-keyword">:class</span> ,classes) pairs))
                        pairs))
-             <span class="osta-hl-comment-delimiter">;; </span><span class="osta-hl-comment">`</span><span class="osta-hl-comment"><span class="osta-hl-constant">id</span></span><span class="osta-hl-comment">' in `</span><span class="osta-hl-comment"><span class="osta-hl-constant">attributes</span></span><span class="osta-hl-comment">' has priority over `</span><span class="osta-hl-comment"><span class="osta-hl-constant">id</span></span><span class="osta-hl-comment">' in `</span><span class="osta-hl-comment"><span class="osta-hl-constant">tag-kw</span></span><span class="osta-hl-comment">'</span>
-             (--pairs (<span class="osta-hl-keyword">if</span> (<span class="osta-hl-keyword">and</span> id (not (assoc <span class="osta-hl-ta-colon-keyword">:id</span> -pairs)))
-                          (cons `(<span class="osta-hl-ta-colon-keyword">:id</span> ,id) -pairs)
+             <span class="one-hl-comment-delimiter">;; </span><span class="one-hl-comment">`</span><span class="one-hl-comment"><span class="one-hl-constant">id</span></span><span class="one-hl-comment">' in `</span><span class="one-hl-comment"><span class="one-hl-constant">attributes</span></span><span class="one-hl-comment">' has priority over `</span><span class="one-hl-comment"><span class="one-hl-constant">id</span></span><span class="one-hl-comment">' in `</span><span class="one-hl-comment"><span class="one-hl-constant">tag-kw</span></span><span class="one-hl-comment">'
+</span>             (--pairs (<span class="one-hl-keyword">if</span> (<span class="one-hl-keyword">and</span> id (not (assoc <span class="one-hl-ta-colon-keyword">:id</span> -pairs)))
+                          (cons `(<span class="one-hl-ta-colon-keyword">:id</span> ,id) -pairs)
                         -pairs))
-             (attrs (string-join (delq nil (mapcar p-&gt;a-v --pairs)) <span class="osta-hl-string">" "</span>))
-             (-attrs (<span class="osta-hl-keyword">if</span> (string-empty-p attrs) <span class="osta-hl-string">""</span> (concat <span class="osta-hl-string">" "</span> attrs))))
-        (<span class="osta-hl-keyword">if</span> (member tag void-tags)
-            `(<span class="osta-hl-ta-colon-keyword">:left</span> ,(concat <span class="osta-hl-string">"&lt;"</span> tag -attrs <span class="osta-hl-string">" /&gt;"</span>))
-          `(<span class="osta-hl-ta-colon-keyword">:left</span>  ,(concat <span class="osta-hl-string">"&lt;"</span> tag -attrs <span class="osta-hl-string">"&gt;"</span>)
-            <span class="osta-hl-ta-colon-keyword">:right</span> ,(concat <span class="osta-hl-string">"&lt;/"</span> tag <span class="osta-hl-string">"&gt;"</span>)))))))
+             (attrs (string-join (delq nil (mapcar p-&gt;a-v --pairs)) <span class="one-hl-string">" "</span>))
+             (-attrs (<span class="one-hl-keyword">if</span> (string-empty-p attrs) <span class="one-hl-string">""</span> (concat <span class="one-hl-string">" "</span> attrs))))
+        (<span class="one-hl-keyword">if</span> (member tag void-tags)
+            `(<span class="one-hl-ta-colon-keyword">:left</span> ,(concat <span class="one-hl-string">"&lt;"</span> tag -attrs <span class="one-hl-string">" /&gt;"</span>))
+          `(<span class="one-hl-ta-colon-keyword">:left</span>  ,(concat <span class="one-hl-string">"&lt;"</span> tag -attrs <span class="one-hl-string">"&gt;"</span>)
+            <span class="one-hl-ta-colon-keyword">:right</span> ,(concat <span class="one-hl-string">"&lt;/"</span> tag <span class="one-hl-string">"&gt;"</span>)))))))
 
-(<span class="osta-hl-keyword">defun</span> <span class="osta-hl-function-name">osta-html-ITER</span> (<span class="osta-hl-type">&amp;rest</span> components)
-  <span class="osta-hl-doc">""</span>
-  (<span class="osta-hl-keyword">let*</span> ((update-tree-comp
-          (<span class="osta-hl-keyword">lambda</span> (tree comp)
-            (<span class="osta-hl-keyword">let*</span> ((comp-str (<span class="osta-hl-keyword">if</span> (stringp comp) comp (number-to-string comp)))
-                   (left (concat (plist-get tree <span class="osta-hl-ta-colon-keyword">:left</span>) comp-str))
-                   (right (plist-get tree <span class="osta-hl-ta-colon-keyword">:right</span>)))
-              `(<span class="osta-hl-ta-colon-keyword">:left</span> ,left <span class="osta-hl-ta-colon-keyword">:right</span> ,right))))
+(<span class="one-hl-keyword">defun</span> <span class="one-hl-function-name">osta-html-ITER</span> (<span class="one-hl-type">&amp;rest</span> components)
+  <span class="one-hl-doc">""</span>
+  (<span class="one-hl-keyword">let*</span> ((update-tree-comp
+          (<span class="one-hl-keyword">lambda</span> (tree comp)
+            (<span class="one-hl-keyword">let*</span> ((comp-str (<span class="one-hl-keyword">if</span> (stringp comp) comp (number-to-string comp)))
+                   (left (concat (plist-get tree <span class="one-hl-ta-colon-keyword">:left</span>) comp-str))
+                   (right (plist-get tree <span class="one-hl-ta-colon-keyword">:right</span>)))
+              `(<span class="one-hl-ta-colon-keyword">:left</span> ,left <span class="one-hl-ta-colon-keyword">:right</span> ,right))))
          (update-tree-tag
-          (<span class="osta-hl-keyword">lambda</span> (tree tag new-rest)
-            (<span class="osta-hl-keyword">let*</span> ((tag-left (plist-get tag <span class="osta-hl-ta-colon-keyword">:left</span>))
-                   (left (concat (plist-get tree <span class="osta-hl-ta-colon-keyword">:left</span>) tag-left))
-                   (tag-right (<span class="osta-hl-keyword">or</span> (plist-get tag <span class="osta-hl-ta-colon-keyword">:right</span>) <span class="osta-hl-string">""</span>))
-                   (tree-right (plist-get tree <span class="osta-hl-ta-colon-keyword">:right</span>))
-                   (right (<span class="osta-hl-keyword">if</span> new-rest
-                              `(<span class="osta-hl-ta-colon-keyword">:left</span> ,tag-right <span class="osta-hl-ta-colon-keyword">:right</span> ,tree-right)
+          (<span class="one-hl-keyword">lambda</span> (tree tag new-rest)
+            (<span class="one-hl-keyword">let*</span> ((tag-left (plist-get tag <span class="one-hl-ta-colon-keyword">:left</span>))
+                   (left (concat (plist-get tree <span class="one-hl-ta-colon-keyword">:left</span>) tag-left))
+                   (tag-right (<span class="one-hl-keyword">or</span> (plist-get tag <span class="one-hl-ta-colon-keyword">:right</span>) <span class="one-hl-string">""</span>))
+                   (tree-right (plist-get tree <span class="one-hl-ta-colon-keyword">:right</span>))
+                   (right (<span class="one-hl-keyword">if</span> new-rest
+                              `(<span class="one-hl-ta-colon-keyword">:left</span> ,tag-right <span class="one-hl-ta-colon-keyword">:right</span> ,tree-right)
                             (concat tag-right tree-right))))
-              `(<span class="osta-hl-ta-colon-keyword">:left</span> ,left <span class="osta-hl-ta-colon-keyword">:right</span> ,right))))
+              `(<span class="one-hl-ta-colon-keyword">:left</span> ,left <span class="one-hl-ta-colon-keyword">:right</span> ,right))))
          (update-tree-rest
-          (<span class="osta-hl-keyword">lambda</span> (tree)
-            (<span class="osta-hl-keyword">let*</span> ((tree-left (plist-get tree <span class="osta-hl-ta-colon-keyword">:left</span>))
-                   (tree-right-left (plist-get (plist-get tree <span class="osta-hl-ta-colon-keyword">:right</span>) <span class="osta-hl-ta-colon-keyword">:left</span>))
-                   (tree-right-right (plist-get (plist-get tree <span class="osta-hl-ta-colon-keyword">:right</span>) <span class="osta-hl-ta-colon-keyword">:right</span>))
+          (<span class="one-hl-keyword">lambda</span> (tree)
+            (<span class="one-hl-keyword">let*</span> ((tree-left (plist-get tree <span class="one-hl-ta-colon-keyword">:left</span>))
+                   (tree-right-left (plist-get (plist-get tree <span class="one-hl-ta-colon-keyword">:right</span>) <span class="one-hl-ta-colon-keyword">:left</span>))
+                   (tree-right-right (plist-get (plist-get tree <span class="one-hl-ta-colon-keyword">:right</span>) <span class="one-hl-ta-colon-keyword">:right</span>))
                    (left (concat tree-left tree-right-left)))
-              `(<span class="osta-hl-ta-colon-keyword">:left</span> ,left <span class="osta-hl-ta-colon-keyword">:right</span> ,tree-right-right))))
-         <span class="osta-hl-comment-delimiter">;; </span><span class="osta-hl-comment">initialize state</span>
-         (tree '(<span class="osta-hl-ta-colon-keyword">:left</span> <span class="osta-hl-string">""</span> <span class="osta-hl-ta-colon-keyword">:right</span> <span class="osta-hl-string">""</span>))
+              `(<span class="one-hl-ta-colon-keyword">:left</span> ,left <span class="one-hl-ta-colon-keyword">:right</span> ,tree-right-right))))
+         <span class="one-hl-comment-delimiter">;; </span><span class="one-hl-comment">initialize state
+</span>         (tree '(<span class="one-hl-ta-colon-keyword">:left</span> <span class="one-hl-string">""</span> <span class="one-hl-ta-colon-keyword">:right</span> <span class="one-hl-string">""</span>))
          rest
          (comps components)
          (comp (car comps)))
-    (<span class="osta-hl-keyword">while</span> (<span class="osta-hl-keyword">or</span> comp (cdr comps))
-      (<span class="osta-hl-keyword">pcase</span> comp
-        <span class="osta-hl-comment-delimiter">;; </span><span class="osta-hl-comment">nil component is just ignored</span>
-        ('nil
-         (<span class="osta-hl-keyword">setq</span> comps (cdr comps))
-         (<span class="osta-hl-keyword">setq</span> comp (car comps)))
-        <span class="osta-hl-comment-delimiter">;; </span><span class="osta-hl-comment">string component or an integer component</span>
-        ((<span class="osta-hl-keyword">or</span> (pred stringp) (pred numberp))
-         (<span class="osta-hl-keyword">setq</span> tree (funcall update-tree-comp tree comp))
-         (<span class="osta-hl-keyword">setq</span> comps (cdr comps))
-         (<span class="osta-hl-keyword">setq</span> comp (car comps)))
-        <span class="osta-hl-comment-delimiter">;; </span><span class="osta-hl-comment">not a tag component but a list of components like '("foo" "bar")</span>
-        ((<span class="osta-hl-keyword">and</span> (pred listp) (guard (not (keywordp (car comp)))))
-         (<span class="osta-hl-keyword">setq</span> comps (append comp (cdr comps)))
-         (<span class="osta-hl-keyword">setq</span> comp (car comps)))
-        <span class="osta-hl-comment-delimiter">;; </span><span class="osta-hl-comment">tag component like '(:p "foo") or '(:p/id.class (@ :attr "attr") "foo")</span>
-        ((pred listp)
-         (<span class="osta-hl-keyword">let</span> ((new-rest (cdr comps)))
-           (<span class="osta-hl-keyword">seq-let</span> (tag comp-children)
-               (<span class="osta-hl-keyword">seq-let</span> (tag-kw attr) comp
-                 <span class="osta-hl-comment-delimiter">;; </span><span class="osta-hl-comment">check if `</span><span class="osta-hl-comment"><span class="osta-hl-constant">attr</span></span><span class="osta-hl-comment">' is of the form '(@ :id "id" :class "class")</span>
-                 (<span class="osta-hl-keyword">if</span> (<span class="osta-hl-keyword">and</span> (listp attr) (equal (car attr) '@))
+    (<span class="one-hl-keyword">while</span> (<span class="one-hl-keyword">or</span> comp (cdr comps))
+      (<span class="one-hl-keyword">pcase</span> comp
+        <span class="one-hl-comment-delimiter">;; </span><span class="one-hl-comment">nil component is just ignored
+</span>        ('nil
+         (<span class="one-hl-keyword">setq</span> comps (cdr comps))
+         (<span class="one-hl-keyword">setq</span> comp (car comps)))
+        <span class="one-hl-comment-delimiter">;; </span><span class="one-hl-comment">string component or an integer component
+</span>        ((<span class="one-hl-keyword">or</span> (pred stringp) (pred numberp))
+         (<span class="one-hl-keyword">setq</span> tree (funcall update-tree-comp tree comp))
+         (<span class="one-hl-keyword">setq</span> comps (cdr comps))
+         (<span class="one-hl-keyword">setq</span> comp (car comps)))
+        <span class="one-hl-comment-delimiter">;; </span><span class="one-hl-comment">not a tag component but a list of components like '("foo" "bar")
+</span>        ((<span class="one-hl-keyword">and</span> (pred listp) (guard (not (keywordp (car comp)))))
+         (<span class="one-hl-keyword">setq</span> comps (append comp (cdr comps)))
+         (<span class="one-hl-keyword">setq</span> comp (car comps)))
+        <span class="one-hl-comment-delimiter">;; </span><span class="one-hl-comment">tag component like '(:p "foo") or '(:p/id.class (@ :attr "attr") "foo")
+</span>        ((pred listp)
+         (<span class="one-hl-keyword">let</span> ((new-rest (cdr comps)))
+           (<span class="one-hl-keyword">seq-let</span> (tag comp-children)
+               (<span class="one-hl-keyword">seq-let</span> (tag-kw attr) comp
+                 <span class="one-hl-comment-delimiter">;; </span><span class="one-hl-comment">check if `</span><span class="one-hl-comment"><span class="one-hl-constant">attr</span></span><span class="one-hl-comment">' is of the form '(@ :id "id" :class "class")
+</span>                 (<span class="one-hl-keyword">if</span> (<span class="one-hl-keyword">and</span> (listp attr) (equal (car attr) '@))
                      (list (osta-tag-ITER tag-kw (cdr attr)) (cddr comp))
                    (list (osta-tag-ITER tag-kw) (cdr comp))))
-             (<span class="osta-hl-keyword">setq</span> tree (funcall update-tree-tag tree tag new-rest))
-             (<span class="osta-hl-keyword">when</span> new-rest (<span class="osta-hl-keyword">push</span> new-rest rest))
-             (<span class="osta-hl-keyword">setq</span> comps (append comp-children (<span class="osta-hl-keyword">and</span> new-rest '(<span class="osta-hl-ta-colon-keyword">:rest</span>))))
-             (<span class="osta-hl-keyword">setq</span> comp (car comps)))))
-        <span class="osta-hl-comment-delimiter">;; </span><span class="osta-hl-comment">make the latest list of components added to `</span><span class="osta-hl-comment"><span class="osta-hl-constant">rest</span></span><span class="osta-hl-comment">' the</span>
-        <span class="osta-hl-comment-delimiter">;; </span><span class="osta-hl-comment">part of `</span><span class="osta-hl-comment"><span class="osta-hl-constant">components</span></span><span class="osta-hl-comment">' to be treated in the next iteration</span>
-        (<span class="osta-hl-ta-colon-keyword">:rest</span>
-         (<span class="osta-hl-keyword">setq</span> tree (funcall update-tree-rest tree))
-         (<span class="osta-hl-keyword">setq</span> comps (<span class="osta-hl-keyword">pop</span> rest))
-         (<span class="osta-hl-keyword">setq</span> comp (car comps)))
-        <span class="osta-hl-comment-delimiter">;; </span><span class="osta-hl-comment">non component object</span>
-        ((<span class="osta-hl-keyword">and</span> _ obj)
-         (<span class="osta-hl-keyword">when</span> osta-html-raise-error-p-ITER
-           (<span class="osta-hl-warning">error</span> <span class="osta-hl-string">"Object '%S' of type '%s' can't be a component in 'osta-html-ITER'"</span>
+             (<span class="one-hl-keyword">setq</span> tree (funcall update-tree-tag tree tag new-rest))
+             (<span class="one-hl-keyword">when</span> new-rest (<span class="one-hl-keyword">push</span> new-rest rest))
+             (<span class="one-hl-keyword">setq</span> comps (append comp-children (<span class="one-hl-keyword">and</span> new-rest '(<span class="one-hl-ta-colon-keyword">:rest</span>))))
+             (<span class="one-hl-keyword">setq</span> comp (car comps)))))
+        <span class="one-hl-comment-delimiter">;; </span><span class="one-hl-comment">make the latest list of components added to `</span><span class="one-hl-comment"><span class="one-hl-constant">rest</span></span><span class="one-hl-comment">' the
+</span>        <span class="one-hl-comment-delimiter">;; </span><span class="one-hl-comment">part of `</span><span class="one-hl-comment"><span class="one-hl-constant">components</span></span><span class="one-hl-comment">' to be treated in the next iteration
+</span>        (<span class="one-hl-ta-colon-keyword">:rest</span>
+         (<span class="one-hl-keyword">setq</span> tree (funcall update-tree-rest tree))
+         (<span class="one-hl-keyword">setq</span> comps (<span class="one-hl-keyword">pop</span> rest))
+         (<span class="one-hl-keyword">setq</span> comp (car comps)))
+        <span class="one-hl-comment-delimiter">;; </span><span class="one-hl-comment">non component object
+</span>        ((<span class="one-hl-keyword">and</span> _ obj)
+         (<span class="one-hl-keyword">when</span> osta-html-raise-error-p-ITER
+           (<span class="one-hl-warning">error</span> <span class="one-hl-string">"Object '</span><span class="one-hl-string"><span class="one-hl-constant">%S</span></span><span class="one-hl-string">' of type '</span><span class="one-hl-string"><span class="one-hl-constant">%s</span></span><span class="one-hl-string">' can't be a component in '</span><span class="one-hl-string"><span class="one-hl-constant">osta-html-ITER</span></span><span class="one-hl-string">'"</span>
                   obj (type-of obj)))
-         (<span class="osta-hl-keyword">setq</span> comps (cdr comps))
-         (<span class="osta-hl-keyword">setq</span> comp (car comps)))))
-    (concat (plist-get tree <span class="osta-hl-ta-colon-keyword">:left</span>) (plist-get tree <span class="osta-hl-ta-colon-keyword">:right</span>))))</code></pre>
-          </div>
-        </div>
+         (<span class="one-hl-keyword">setq</span> comps (cdr comps))
+         (<span class="one-hl-keyword">setq</span> comp (car comps)))))
+    (concat (plist-get tree <span class="one-hl-ta-colon-keyword">:left</span>) (plist-get tree <span class="one-hl-ta-colon-keyword">:right</span>))))</code></pre>
+</div>
+</div>
 
-        <div>
-          <h2>Test the functionalities</h2>
-          <div>
-            <pre><code class="osta-hl osta-hl-block">(<span class="osta-hl-keyword">ert-deftest</span> <span class="osta-hl-function-name">osta-html-functionality</span> ()
-  (<span class="osta-hl-keyword">let</span> ((osta-html-raise-error-p nil))
-    <span class="osta-hl-comment-delimiter">;; </span><span class="osta-hl-comment">`</span><span class="osta-hl-comment"><span class="osta-hl-constant">osta-html-REC</span></span><span class="osta-hl-comment">'</span>
-    (<span class="osta-hl-keyword">should</span> (string= (osta-html-REC nil) <span class="osta-hl-string">""</span>))
-    (<span class="osta-hl-keyword">should</span> (string= (osta-html-REC <span class="osta-hl-string">"foo"</span>) <span class="osta-hl-string">"foo"</span>))
-    (<span class="osta-hl-keyword">should</span> (string= (osta-html-REC 16) <span class="osta-hl-string">"16"</span>))
-    (<span class="osta-hl-keyword">should</span> (string= (osta-html-REC '(<span class="osta-hl-ta-colon-keyword">:hr</span>)) <span class="osta-hl-string">"&lt;hr /&gt;"</span>))
-    (<span class="osta-hl-keyword">should</span> (string= (osta-html-REC '(<span class="osta-hl-ta-colon-keyword">:div</span> (@ <span class="osta-hl-ta-colon-keyword">:id</span> <span class="osta-hl-string">"id"</span> <span class="osta-hl-ta-colon-keyword">:class</span> <span class="osta-hl-string">"class"</span>) <span class="osta-hl-string">"foo"</span>))
-                     <span class="osta-hl-string">"&lt;div id=\"id\" class=\"class\"&gt;foo&lt;/div&gt;"</span>))
-    (<span class="osta-hl-keyword">should</span> (string= (osta-html-REC '(<span class="osta-hl-string">"foo"</span> 1 <span class="osta-hl-string">"bar"</span>)) <span class="osta-hl-string">"foo1bar"</span>))
-    (<span class="osta-hl-keyword">should</span> (string= (osta-html-REC '(<span class="osta-hl-ta-colon-keyword">:ul</span> ((<span class="osta-hl-ta-colon-keyword">:li</span> <span class="osta-hl-string">"1"</span>) (<span class="osta-hl-ta-colon-keyword">:li</span> <span class="osta-hl-string">"2"</span>))))
-                     <span class="osta-hl-string">"&lt;ul&gt;&lt;li&gt;1&lt;/li&gt;&lt;li&gt;2&lt;/li&gt;&lt;/ul&gt;"</span>))
-    (<span class="osta-hl-keyword">should</span> (string=
-             (osta-html-REC `(<span class="osta-hl-ta-colon-keyword">:ul</span> ,(mapcar (<span class="osta-hl-keyword">lambda</span> (n) `(<span class="osta-hl-ta-colon-keyword">:li</span> ,n)) '(1 2))))
-             <span class="osta-hl-string">"&lt;ul&gt;&lt;li&gt;1&lt;/li&gt;&lt;li&gt;2&lt;/li&gt;&lt;/ul&gt;"</span>))
-    (<span class="osta-hl-keyword">should</span> (string= (osta-html-REC (mapcar (<span class="osta-hl-keyword">lambda</span> (n) `(<span class="osta-hl-ta-colon-keyword">:p</span> ,n)) '(1 2 3)))
-                     <span class="osta-hl-string">"&lt;p&gt;1&lt;/p&gt;&lt;p&gt;2&lt;/p&gt;&lt;p&gt;3&lt;/p&gt;"</span>))
-    (<span class="osta-hl-keyword">should</span> (string= (<span class="osta-hl-keyword">let</span> ((x <span class="osta-hl-string">"foo"</span>) (y <span class="osta-hl-string">"bar"</span>))
-                       (osta-html-REC `(<span class="osta-hl-ta-colon-keyword">:p</span> (@ <span class="osta-hl-ta-colon-keyword">:id</span> ,x) ,y)))
-                     <span class="osta-hl-string">"&lt;p id=\"foo\"&gt;bar&lt;/p&gt;"</span>))
-    (<span class="osta-hl-keyword">should</span> (string= (osta-html-REC
-                      (<span class="osta-hl-keyword">let</span> ((x <span class="osta-hl-string">"foo"</span>) (y <span class="osta-hl-string">"bar"</span>))
-                        `(<span class="osta-hl-ta-colon-keyword">:p</span> (@ <span class="osta-hl-ta-colon-keyword">:id</span> ,x) ,y)))
-                     <span class="osta-hl-string">"&lt;p id=\"foo\"&gt;bar&lt;/p&gt;"</span>))
+<div><h2 id="one-68d4082c87">Test the functionalities</h2><div><pre><code class="one-hl one-hl-block">(<span class="one-hl-keyword">ert-deftest</span> <span class="one-hl-function-name">osta-html-functionality</span> ()
+  (<span class="one-hl-keyword">let</span> ((osta-html-raise-error-p nil))
+    <span class="one-hl-comment-delimiter">;; </span><span class="one-hl-comment">`</span><span class="one-hl-comment"><span class="one-hl-constant">osta-html-REC</span></span><span class="one-hl-comment">'
+</span>    (<span class="one-hl-keyword">should</span> (string= (osta-html-REC nil) <span class="one-hl-string">""</span>))
+    (<span class="one-hl-keyword">should</span> (string= (osta-html-REC <span class="one-hl-string">"foo"</span>) <span class="one-hl-string">"foo"</span>))
+    (<span class="one-hl-keyword">should</span> (string= (osta-html-REC 16) <span class="one-hl-string">"16"</span>))
+    (<span class="one-hl-keyword">should</span> (string= (osta-html-REC '(<span class="one-hl-ta-colon-keyword">:hr</span>)) <span class="one-hl-string">"&lt;hr /&gt;"</span>))
+    (<span class="one-hl-keyword">should</span> (string= (osta-html-REC '(<span class="one-hl-ta-colon-keyword">:div</span> (@ <span class="one-hl-ta-colon-keyword">:id</span> <span class="one-hl-string">"id"</span> <span class="one-hl-ta-colon-keyword">:class</span> <span class="one-hl-string">"class"</span>) <span class="one-hl-string">"foo"</span>))
+                     <span class="one-hl-string">"&lt;div id=\"id\" class=\"class\"&gt;foo&lt;/div&gt;"</span>))
+    (<span class="one-hl-keyword">should</span> (string= (osta-html-REC '(<span class="one-hl-string">"foo"</span> 1 <span class="one-hl-string">"bar"</span>)) <span class="one-hl-string">"foo1bar"</span>))
+    (<span class="one-hl-keyword">should</span> (string= (osta-html-REC '(<span class="one-hl-ta-colon-keyword">:ul</span> ((<span class="one-hl-ta-colon-keyword">:li</span> <span class="one-hl-string">"1"</span>) (<span class="one-hl-ta-colon-keyword">:li</span> <span class="one-hl-string">"2"</span>))))
+                     <span class="one-hl-string">"&lt;ul&gt;&lt;li&gt;1&lt;/li&gt;&lt;li&gt;2&lt;/li&gt;&lt;/ul&gt;"</span>))
+    (<span class="one-hl-keyword">should</span> (string=
+             (osta-html-REC `(<span class="one-hl-ta-colon-keyword">:ul</span> ,(mapcar (<span class="one-hl-keyword">lambda</span> (n) `(<span class="one-hl-ta-colon-keyword">:li</span> ,n)) '(1 2))))
+             <span class="one-hl-string">"&lt;ul&gt;&lt;li&gt;1&lt;/li&gt;&lt;li&gt;2&lt;/li&gt;&lt;/ul&gt;"</span>))
+    (<span class="one-hl-keyword">should</span> (string= (osta-html-REC (mapcar (<span class="one-hl-keyword">lambda</span> (n) `(<span class="one-hl-ta-colon-keyword">:p</span> ,n)) '(1 2 3)))
+                     <span class="one-hl-string">"&lt;p&gt;1&lt;/p&gt;&lt;p&gt;2&lt;/p&gt;&lt;p&gt;3&lt;/p&gt;"</span>))
+    (<span class="one-hl-keyword">should</span> (string= (<span class="one-hl-keyword">let</span> ((x <span class="one-hl-string">"foo"</span>) (y <span class="one-hl-string">"bar"</span>))
+                       (osta-html-REC `(<span class="one-hl-ta-colon-keyword">:p</span> (@ <span class="one-hl-ta-colon-keyword">:id</span> ,x) ,y)))
+                     <span class="one-hl-string">"&lt;p id=\"foo\"&gt;bar&lt;/p&gt;"</span>))
+    (<span class="one-hl-keyword">should</span> (string= (osta-html-REC
+                      (<span class="one-hl-keyword">let</span> ((x <span class="one-hl-string">"foo"</span>) (y <span class="one-hl-string">"bar"</span>))
+                        `(<span class="one-hl-ta-colon-keyword">:p</span> (@ <span class="one-hl-ta-colon-keyword">:id</span> ,x) ,y)))
+                     <span class="one-hl-string">"&lt;p id=\"foo\"&gt;bar&lt;/p&gt;"</span>))
 
-    <span class="osta-hl-comment-delimiter">;; </span><span class="osta-hl-comment">`</span><span class="osta-hl-comment"><span class="osta-hl-constant">osta-html-ITER</span></span><span class="osta-hl-comment">'</span>
-    (<span class="osta-hl-keyword">should</span> (string= (osta-html-ITER nil) <span class="osta-hl-string">""</span>))
-    (<span class="osta-hl-keyword">should</span> (string= (osta-html-ITER <span class="osta-hl-string">"foo"</span>) <span class="osta-hl-string">"foo"</span>))
-    (<span class="osta-hl-keyword">should</span> (string= (osta-html-ITER 16) <span class="osta-hl-string">"16"</span>))
-    (<span class="osta-hl-keyword">should</span> (string= (osta-html-ITER '(<span class="osta-hl-ta-colon-keyword">:hr</span>)) <span class="osta-hl-string">"&lt;hr /&gt;"</span>))
-    (<span class="osta-hl-keyword">should</span> (string= (osta-html-ITER '(<span class="osta-hl-ta-colon-keyword">:div</span> (@ <span class="osta-hl-ta-colon-keyword">:id</span> <span class="osta-hl-string">"id"</span> <span class="osta-hl-ta-colon-keyword">:class</span> <span class="osta-hl-string">"class"</span>) <span class="osta-hl-string">"foo"</span>))
-                     <span class="osta-hl-string">"&lt;div id=\"id\" class=\"class\"&gt;foo&lt;/div&gt;"</span>))
-    (<span class="osta-hl-keyword">should</span> (string= (osta-html-ITER '(<span class="osta-hl-string">"foo"</span> 1 <span class="osta-hl-string">"bar"</span>)) <span class="osta-hl-string">"foo1bar"</span>))
-    (<span class="osta-hl-keyword">should</span> (string= (osta-html-ITER '(<span class="osta-hl-ta-colon-keyword">:ul</span> ((<span class="osta-hl-ta-colon-keyword">:li</span> <span class="osta-hl-string">"1"</span>) (<span class="osta-hl-ta-colon-keyword">:li</span> <span class="osta-hl-string">"2"</span>))))
-                     <span class="osta-hl-string">"&lt;ul&gt;&lt;li&gt;1&lt;/li&gt;&lt;li&gt;2&lt;/li&gt;&lt;/ul&gt;"</span>))
-    (<span class="osta-hl-keyword">should</span> (string=
-             (osta-html-ITER `(<span class="osta-hl-ta-colon-keyword">:ul</span> ,(mapcar (<span class="osta-hl-keyword">lambda</span> (n) `(<span class="osta-hl-ta-colon-keyword">:li</span> ,n)) '(1 2))))
-             <span class="osta-hl-string">"&lt;ul&gt;&lt;li&gt;1&lt;/li&gt;&lt;li&gt;2&lt;/li&gt;&lt;/ul&gt;"</span>))
-    (<span class="osta-hl-keyword">should</span> (string= (osta-html-ITER (mapcar (<span class="osta-hl-keyword">lambda</span> (n) `(<span class="osta-hl-ta-colon-keyword">:p</span> ,n)) '(1 2 3)))
-                     <span class="osta-hl-string">"&lt;p&gt;1&lt;/p&gt;&lt;p&gt;2&lt;/p&gt;&lt;p&gt;3&lt;/p&gt;"</span>))
-    (<span class="osta-hl-keyword">should</span> (string= (<span class="osta-hl-keyword">let</span> ((x <span class="osta-hl-string">"foo"</span>) (y <span class="osta-hl-string">"bar"</span>))
-                       (osta-html-ITER `(<span class="osta-hl-ta-colon-keyword">:p</span> (@ <span class="osta-hl-ta-colon-keyword">:id</span> ,x) ,y)))
-                     <span class="osta-hl-string">"&lt;p id=\"foo\"&gt;bar&lt;/p&gt;"</span>))
-    (<span class="osta-hl-keyword">should</span> (string= (osta-html-ITER
-                      (<span class="osta-hl-keyword">let</span> ((x <span class="osta-hl-string">"foo"</span>) (y <span class="osta-hl-string">"bar"</span>))
-                        `(<span class="osta-hl-ta-colon-keyword">:p</span> (@ <span class="osta-hl-ta-colon-keyword">:id</span> ,x) ,y)))
-                     <span class="osta-hl-string">"&lt;p id=\"foo\"&gt;bar&lt;/p&gt;"</span>))))</code></pre>
-          </div>
-        </div>
+    <span class="one-hl-comment-delimiter">;; </span><span class="one-hl-comment">`</span><span class="one-hl-comment"><span class="one-hl-constant">osta-html-ITER</span></span><span class="one-hl-comment">'
+</span>    (<span class="one-hl-keyword">should</span> (string= (osta-html-ITER nil) <span class="one-hl-string">""</span>))
+    (<span class="one-hl-keyword">should</span> (string= (osta-html-ITER <span class="one-hl-string">"foo"</span>) <span class="one-hl-string">"foo"</span>))
+    (<span class="one-hl-keyword">should</span> (string= (osta-html-ITER 16) <span class="one-hl-string">"16"</span>))
+    (<span class="one-hl-keyword">should</span> (string= (osta-html-ITER '(<span class="one-hl-ta-colon-keyword">:hr</span>)) <span class="one-hl-string">"&lt;hr /&gt;"</span>))
+    (<span class="one-hl-keyword">should</span> (string= (osta-html-ITER '(<span class="one-hl-ta-colon-keyword">:div</span> (@ <span class="one-hl-ta-colon-keyword">:id</span> <span class="one-hl-string">"id"</span> <span class="one-hl-ta-colon-keyword">:class</span> <span class="one-hl-string">"class"</span>) <span class="one-hl-string">"foo"</span>))
+                     <span class="one-hl-string">"&lt;div id=\"id\" class=\"class\"&gt;foo&lt;/div&gt;"</span>))
+    (<span class="one-hl-keyword">should</span> (string= (osta-html-ITER '(<span class="one-hl-string">"foo"</span> 1 <span class="one-hl-string">"bar"</span>)) <span class="one-hl-string">"foo1bar"</span>))
+    (<span class="one-hl-keyword">should</span> (string= (osta-html-ITER '(<span class="one-hl-ta-colon-keyword">:ul</span> ((<span class="one-hl-ta-colon-keyword">:li</span> <span class="one-hl-string">"1"</span>) (<span class="one-hl-ta-colon-keyword">:li</span> <span class="one-hl-string">"2"</span>))))
+                     <span class="one-hl-string">"&lt;ul&gt;&lt;li&gt;1&lt;/li&gt;&lt;li&gt;2&lt;/li&gt;&lt;/ul&gt;"</span>))
+    (<span class="one-hl-keyword">should</span> (string=
+             (osta-html-ITER `(<span class="one-hl-ta-colon-keyword">:ul</span> ,(mapcar (<span class="one-hl-keyword">lambda</span> (n) `(<span class="one-hl-ta-colon-keyword">:li</span> ,n)) '(1 2))))
+             <span class="one-hl-string">"&lt;ul&gt;&lt;li&gt;1&lt;/li&gt;&lt;li&gt;2&lt;/li&gt;&lt;/ul&gt;"</span>))
+    (<span class="one-hl-keyword">should</span> (string= (osta-html-ITER (mapcar (<span class="one-hl-keyword">lambda</span> (n) `(<span class="one-hl-ta-colon-keyword">:p</span> ,n)) '(1 2 3)))
+                     <span class="one-hl-string">"&lt;p&gt;1&lt;/p&gt;&lt;p&gt;2&lt;/p&gt;&lt;p&gt;3&lt;/p&gt;"</span>))
+    (<span class="one-hl-keyword">should</span> (string= (<span class="one-hl-keyword">let</span> ((x <span class="one-hl-string">"foo"</span>) (y <span class="one-hl-string">"bar"</span>))
+                       (osta-html-ITER `(<span class="one-hl-ta-colon-keyword">:p</span> (@ <span class="one-hl-ta-colon-keyword">:id</span> ,x) ,y)))
+                     <span class="one-hl-string">"&lt;p id=\"foo\"&gt;bar&lt;/p&gt;"</span>))
+    (<span class="one-hl-keyword">should</span> (string= (osta-html-ITER
+                      (<span class="one-hl-keyword">let</span> ((x <span class="one-hl-string">"foo"</span>) (y <span class="one-hl-string">"bar"</span>))
+                        `(<span class="one-hl-ta-colon-keyword">:p</span> (@ <span class="one-hl-ta-colon-keyword">:id</span> ,x) ,y)))
+                     <span class="one-hl-string">"&lt;p id=\"foo\"&gt;bar&lt;/p&gt;"</span>))))</code></pre>
+</div>
+</div>
 
-        <div>
-          <h2>Test the robustness</h2>
-          <div>
-            <h3>
-              50 nested <code class="osta-hl osta-hl-inline">:div</code> vs.
-              10000 nested <code class="osta-hl osta-hl-inline">:div</code>
-            </h3>
-            <div>
-              <pre><code class="osta-hl osta-hl-block">(<span class="osta-hl-keyword">defun</span> <span class="osta-hl-function-name">nested-foo-comp</span> (n)
-  <span class="osta-hl-doc">"Construct nested list where car is the keyword :div.</span>
-<span class="osta-hl-doc">For instance: (nested-foo-comp 3) -&gt; (:div (:div (:div \"foo\")))"</span>
-  (<span class="osta-hl-keyword">let</span> ((comp <span class="osta-hl-string">"foo"</span>))
-    (<span class="osta-hl-keyword">dotimes</span> (_ n) (<span class="osta-hl-keyword">setq</span> comp (list <span class="osta-hl-ta-colon-keyword">:div</span> comp)))
+<div><h2 id="one-a76ef9463f">Test the robustness</h2><div><h3 id="one-adff51346">50 nested ~:div~ vs. 10000 nested ~:div~</h3><div><pre><code class="one-hl one-hl-block">(<span class="one-hl-keyword">defun</span> <span class="one-hl-function-name">nested-foo-comp</span> (n)
+  <span class="one-hl-doc">"Construct nested list where car is the keyword :div.
+For instance: (nested-foo-comp 3) -&gt; (:div (:div (:div \"foo\")))"</span>
+  (<span class="one-hl-keyword">let</span> ((comp <span class="one-hl-string">"foo"</span>))
+    (<span class="one-hl-keyword">dotimes</span> (_ n) (<span class="one-hl-keyword">setq</span> comp (list <span class="one-hl-ta-colon-keyword">:div</span> comp)))
     comp))
 
-(<span class="osta-hl-keyword">ert-deftest</span> <span class="osta-hl-function-name">osta-html-lisp-nesting</span> ()
-  (<span class="osta-hl-keyword">let</span> ((max-lisp-eval-depth 800)) <span class="osta-hl-comment-delimiter">; </span><span class="osta-hl-comment">default value</span>
-    <span class="osta-hl-comment-delimiter">;; </span><span class="osta-hl-comment">`</span><span class="osta-hl-comment"><span class="osta-hl-constant">osta-html-REC</span></span><span class="osta-hl-comment">'</span>
-    <span class="osta-hl-comment-delimiter">;; </span><span class="osta-hl-comment">(error "Lisp nesting exceeds &#8216;</span><span class="osta-hl-comment"><span class="osta-hl-constant">max-lisp-eval-depth</span></span><span class="osta-hl-comment">&#8217;")</span>
-    (<span class="osta-hl-keyword">let</span> ((comp (nested-foo-comp 50)))
-      (<span class="osta-hl-keyword">should-error</span> (osta-html-REC comp)))
+(<span class="one-hl-keyword">ert-deftest</span> <span class="one-hl-function-name">osta-html-lisp-nesting</span> ()
+  (<span class="one-hl-keyword">let</span> ((max-lisp-eval-depth 800)) <span class="one-hl-comment-delimiter">; </span><span class="one-hl-comment">default value
+</span>    <span class="one-hl-comment-delimiter">;; </span><span class="one-hl-comment">`</span><span class="one-hl-comment"><span class="one-hl-constant">osta-html-REC</span></span><span class="one-hl-comment">'
+</span>    <span class="one-hl-comment-delimiter">;; </span><span class="one-hl-comment">(error "Lisp nesting exceeds &#8216;</span><span class="one-hl-comment"><span class="one-hl-constant">max-lisp-eval-depth</span></span><span class="one-hl-comment">&#8217;")
+</span>    (<span class="one-hl-keyword">let</span> ((comp (nested-foo-comp 50)))
+      (<span class="one-hl-keyword">should-error</span> (osta-html-REC comp)))
 
-    <span class="osta-hl-comment-delimiter">;; </span><span class="osta-hl-comment">`</span><span class="osta-hl-comment"><span class="osta-hl-constant">osta-html-ITER</span></span><span class="osta-hl-comment">'</span>
-    (message <span class="osta-hl-string">"Might take a few seconds..."</span>)
-    (<span class="osta-hl-keyword">let</span> ((comp (nested-foo-comp 10000)))
-      (<span class="osta-hl-keyword">should</span> (osta-html-ITER comp)))))</code></pre>
-            </div>
-          </div>
+    <span class="one-hl-comment-delimiter">;; </span><span class="one-hl-comment">`</span><span class="one-hl-comment"><span class="one-hl-constant">osta-html-ITER</span></span><span class="one-hl-comment">'
+</span>    (message <span class="one-hl-string">"Might take a few seconds..."</span>)
+    (<span class="one-hl-keyword">let</span> ((comp (nested-foo-comp 10000)))
+      (<span class="one-hl-keyword">should</span> (osta-html-ITER comp)))))</code></pre>
+</div>
+</div>
 
-          <div>
-            <h3>Performance</h3>
-            <div>
-              <pre><code class="osta-hl osta-hl-block">(<span class="osta-hl-keyword">let</span> ((comp '(<span class="osta-hl-ta-colon-keyword">:p</span> <span class="osta-hl-string">"foo"</span>)))
-  (<span class="osta-hl-keyword">dolist</span> (osta-html '(osta-html-REC osta-html-ITER))
-    (message <span class="osta-hl-string">"------------------------------------"</span>)
-    (<span class="osta-hl-keyword">dotimes</span> (_ 15)
+<div><h3 id="one-ec4e223e1e">Performance</h3><div><pre><code class="one-hl one-hl-block">(<span class="one-hl-keyword">let</span> ((comp '(<span class="one-hl-ta-colon-keyword">:p</span> <span class="one-hl-string">"foo"</span>)))
+  (<span class="one-hl-keyword">dolist</span> (osta-html '(osta-html-REC osta-html-ITER))
+    (message <span class="one-hl-string">"------------------------------------"</span>)
+    (<span class="one-hl-keyword">dotimes</span> (_ 15)
       (garbage-collect)
-      (apply #'message <span class="osta-hl-string">"%-15s %10.6f %3d %.3f"</span> osta-html
-               (<span class="osta-hl-keyword">benchmark-run</span> 10 (funcall osta-html comp))))))</code></pre>
+      (apply #'message <span class="one-hl-string">"%-15s %10.6f %3d %.3f"</span> osta-html
+               (<span class="one-hl-keyword">benchmark-run</span> 10 (funcall osta-html comp))))))</code></pre>
 
-              <pre><code class="osta-hl osta-hl-block">------------------------------------
+<pre><code class="one-hl one-hl-block">------------------------------------
 osta-html-REC     0.000304   0 0.000
 osta-html-REC     0.000201   0 0.000
 osta-html-REC     0.000204   0 0.000
@@ -600,10 +478,7 @@ osta-html-ITER    0.000222   0 0.000
 osta-html-ITER    0.000220   0 0.000
 osta-html-ITER    0.000214   0 0.000
 osta-html-ITER    0.000182   0 0.000</code></pre>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </body>
-</html>
+</div>
+</div>
+</div>
+<div class="nav"><a href="/jack-html-implementation-details/">PREV</a></div></div></body></html>

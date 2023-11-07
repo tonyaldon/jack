@@ -1,21 +1,12 @@
-* Documentation
+* Jack
 :PROPERTIES:
-:ONE_PAGE: t
+:ONE: one-default-home
 :CUSTOM_ID: /
 :ONE_CREATED_AT: [2022-02-10 Thu]
+:ONE_UPDATED_AT: [2023-11-07 Tue]
 :END:
 
-~jack~ is a HTML generator library for Emacs Lisp.
-
-If you want to read about its implementation, here are two articles:
-
-- [[#/jack-html-implementation-details/][jack-html implementation details]],
-- [[#/recursive-vs-iterative-implementation-of-jack-html-in-elisp/][Recursive vs. iterative implementation of jack-html in Elisp]].
-
-If you want an example of a website built using ~jack~ you can take a
-look at https://gitlab.com/tonyaldon/dieta/.
-
-If you just want to use it, read on:
+[[https://github.com/tonyaldon/jack][jack]] is a HTML generator library for Emacs Lisp.
 
 To install it put ~jack.el~ file in your load path and require ~jack~
 like this:
@@ -127,9 +118,14 @@ which raises the error:
 Object '[a b c]' of type 'vector' can't be a component in 'jack-html'
 #+END_SRC
 
+If you want to read about its implementation, here are two articles:
+
+- [[#/jack-html-implementation-details/][jack-html implementation details]],
+- [[#/recursive-vs-iterative-implementation-of-jack-html-in-elisp/][Recursive vs. iterative implementation of jack-html in Elisp]].
+
 * jack-html implementation details
 :PROPERTIES:
-:ONE_PAGE: t
+:ONE: one-default
 :CUSTOM_ID: /jack-html-implementation-details/
 :ONE_CREATED_AT: [2022-02-08 Tue]
 :ONE_UPDATED_AT: [2022-11-05 Sat]
@@ -560,7 +556,7 @@ part of ~tree~.
 
 * Recursive vs. iterative implementation of jack-html in Elisp
 :PROPERTIES:
-:ONE_PAGE: t
+:ONE: one-default
 :CUSTOM_ID: /recursive-vs-iterative-implementation-of-jack-html-in-elisp/
 :ONE_CREATED_AT: [2022-02-07 Mon]
 :ONE_UPDATED_AT: [2022-11-05 Sat]
