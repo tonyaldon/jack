@@ -1,4 +1,5 @@
-<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1" /><link rel="stylesheet" type="text/css" href="/one.css" /><title>Jack</title></head><body><div class="header">Jack</div><div class="content"><div id="home"><div><p><a href="https://github.com/tonyaldon/jack">jack</a> is a HTML generator library for Emacs Lisp.
+<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1" /><link rel="stylesheet" type="text/css" href="/one.css" /><title>Jack</title></head><body><div id="sidebar-left" onclick="followSidebarLink()"><div><div>Pages</div></div><ul><li><a href="/">Jack</a></li><li><a href="/jack-html-implementation-details/">jack-html implementation details</a></li><li><a href="/recursive-vs-iterative-implementation-of-jack-html-in-elisp/">Recursive vs. iterative implementation of jack-html in Elisp</a></li></ul></div><div id="sidebar-main"></div><div id="sidebar-header"><svg id="hamburger" viewBox="0 0 24 24" onclick="sidebarShow()"><path d="M21,6H3V5h18V6z M21,11H3v1h18V11z M21,17H3v1h18V17z"></path></svg><a href="/">Jack</a></div><div id="sidebar-content"><div id="sidebar"><ul><li><a href="/">Jack</a></li><li><a href="/jack-html-implementation-details/">jack-html implementation details</a></li><li><a href="/recursive-vs-iterative-implementation-of-jack-html-in-elisp/">Recursive vs. iterative implementation of jack-html in Elisp</a></li></ul></div><article><div class="title-empty"></div><div></div>
+<div><h2 id="one-48aef5e49a">HTML generator for Emacs Lisp</h2><div><p>You can find the code here: <a href="https://github.com/tonyaldon/jack">https://github.com/tonyaldon/jack</a>.
 </p>
 
 <p>To install it put <code class="one-hl one-hl-inline">jack.el</code> file in your load path and require <code class="one-hl one-hl-inline">jack</code>
@@ -115,5 +116,19 @@ component for <code class="one-hl one-hl-inline">jack-html</code>.
 </li>
 </ul>
 </div>
-
-</div></div></body></html>
+</div>
+<div class="nav"><a href="/jack-html-implementation-details/">RANDOM</a><a href="/jack-html-implementation-details/">NEXT</a></div></article></div></body><script>
+function sidebarShow() {
+  if (window.innerWidth < 481)
+    document.getElementById('sidebar-left').style.width = '75vw';
+  else {
+    document.getElementById('sidebar-left').style.width = 'min(300px, 34vw)';
+  }
+  document.getElementById('sidebar-main').setAttribute('onclick', 'sidebarHide()');
+  document.getElementById('sidebar-main').style.display = 'block';
+}
+function sidebarHide() {
+  document.getElementById('sidebar-left').style.width = '0';
+  document.getElementById('sidebar-main').style.display = 'none';
+}
+</script></html>

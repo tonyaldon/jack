@@ -1,5 +1,19 @@
-<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1" /><link rel="stylesheet" type="text/css" href="/one.css" /><title>Recursive vs. iterative implementation of jack-html in Elisp</title></head><body><div class="header"><a href="/">Jack</a></div><div class="content"><div class="title"><h1>Recursive vs. iterative implementation of jack-html in Elisp</h1></div><div></div>
-<div><h2 id="one-d70caa0041">jack-html was named osta-html</h2><div><p>This article has been written when the package <code class="one-hl one-hl-inline">jack</code> was named <code class="one-hl one-hl-inline">osta</code>.
+<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1" /><link rel="stylesheet" type="text/css" href="/one.css" /><title>Recursive vs. iterative implementation of jack-html in Elisp</title></head><body><div id="sidebar-left" onclick="followSidebarLink()"><div><div>Pages</div></div><ul><li><a href="/">Jack</a></li><li><a href="/jack-html-implementation-details/">jack-html implementation details</a></li><li><a href="/recursive-vs-iterative-implementation-of-jack-html-in-elisp/">Recursive vs. iterative implementation of jack-html in Elisp</a></li></ul></div><div id="sidebar-main"></div><div id="sidebar-header"><svg id="hamburger" viewBox="0 0 24 24" onclick="sidebarShow()"><path d="M21,6H3V5h18V6z M21,11H3v1h18V11z M21,17H3v1h18V17z"></path></svg><a href="/">Jack</a></div><div id="sidebar-content"><div id="sidebar"><ul><li><a href="/">Jack</a></li><li><a href="/jack-html-implementation-details/">jack-html implementation details</a></li><li><a href="/recursive-vs-iterative-implementation-of-jack-html-in-elisp/">Recursive vs. iterative implementation of jack-html in Elisp</a></li></ul></div><article><div class="title"><h1>Recursive vs. iterative implementation of jack-html in Elisp</h1></div><div class="toc"><div><div>Table of content</div><div>
+<ul>
+<li><a href="#one-da55d73c26">jack-html was named osta-html</a></li>
+<li><a href="#one-6907b77d">Push the limits</a></li>
+<li><a href="#one-2d9e06e4d3">osta-html-REC (recursive implementation of osta-html)</a></li>
+<li><a href="#one-30f9fb61da">osta-html-ITER (iterative implementation of osta-html)</a></li>
+<li><a href="#one-a9a43c36ce">Test the functionalities</a></li>
+<li><a href="#one-73e0d12353">Test the robustness</a>
+<ul>
+<li><a href="#one-92a6f58880">50 nested :div vs. 10000 nested :div</a></li>
+<li><a href="#one-c185ae5026">Performance</a></li>
+</ul>
+</li>
+</ul>
+</div></div></div><div></div>
+<div><h2 id="one-da55d73c26">jack-html was named osta-html</h2><div><p>This article has been written when the package <code class="one-hl one-hl-inline">jack</code> was named <code class="one-hl one-hl-inline">osta</code>.
 </p>
 
 <p>To be precise, the function <code class="one-hl one-hl-inline">osta-html</code> has been renamed <code class="one-hl one-hl-inline">jack-html</code> at
@@ -12,7 +26,7 @@ code base now to see no <code class="one-hl one-hl-inline">osta-html</code> func
 </div>
 </div>
 
-<div><h2 id="one-bb324e766d">Push the limits</h2><div><p>At commit <code class="one-hl one-hl-inline">554d733</code> (2022-01-23), I finally got <code class="one-hl one-hl-inline">osta-html</code> working and
+<div><h2 id="one-6907b77d">Push the limits</h2><div><p>At commit <code class="one-hl one-hl-inline">554d733</code> (2022-01-23), I finally got <code class="one-hl one-hl-inline">osta-html</code> working and
 passing the tests I wanted it to pass.  So, I had now a way to convert
 components (Elisp data structure representing html) into html like
 this:
@@ -137,7 +151,7 @@ components containing <code class="one-hl one-hl-inline">%s</code> strings.
 </div>
 </div>
 
-<div><h2 id="one-5755f0c19f">~osta-html-REC~ (recursive implementation of ~osta-html~)</h2><div><pre><code class="one-hl one-hl-block"><span class="one-hl-comment-delimiter">;; </span><span class="one-hl-comment">commit 554d7337df242124822b6adcada50d1a99bac4a4
+<div><h2 id="one-2d9e06e4d3">osta-html-REC (recursive implementation of osta-html)</h2><div><pre><code class="one-hl one-hl-block"><span class="one-hl-comment-delimiter">;; </span><span class="one-hl-comment">commit 554d7337df242124822b6adcada50d1a99bac4a4
 </span><span class="one-hl-comment-delimiter">;; </span><span class="one-hl-comment">Author: tony <a href="mailto:tony.aldon.adm%40gmail.com">&lt;tony.aldon.adm@gmail.com&gt;</a>
 </span><span class="one-hl-comment-delimiter">;; </span><span class="one-hl-comment">Date:   Sun Jan 23 10:08:13 2022 +0100
 </span>
@@ -232,7 +246,7 @@ components containing <code class="one-hl one-hl-inline">%s</code> strings.
 </div>
 </div>
 
-<div><h2 id="one-7aabc4e8e6">~osta-html-ITER~ (iterative implementation of ~osta-html~)</h2><div><pre><code class="one-hl one-hl-block"><span class="one-hl-comment-delimiter">;; </span><span class="one-hl-comment">commit cd43e0bc6d2bf7affcc1fce0b071fa8f3f1978c0
+<div><h2 id="one-30f9fb61da">osta-html-ITER (iterative implementation of osta-html)</h2><div><pre><code class="one-hl one-hl-block"><span class="one-hl-comment-delimiter">;; </span><span class="one-hl-comment">commit cd43e0bc6d2bf7affcc1fce0b071fa8f3f1978c0
 </span><span class="one-hl-comment-delimiter">;; </span><span class="one-hl-comment">Author: tony <a href="mailto:tony.aldon.adm%40gmail.com">&lt;tony.aldon.adm@gmail.com&gt;</a>
 </span><span class="one-hl-comment-delimiter">;; </span><span class="one-hl-comment">Date:   Mon Feb 7 10:51:35 2022 +0100
 </span>
@@ -367,7 +381,7 @@ components containing <code class="one-hl one-hl-inline">%s</code> strings.
 </div>
 </div>
 
-<div><h2 id="one-68d4082c87">Test the functionalities</h2><div><pre><code class="one-hl one-hl-block">(<span class="one-hl-keyword">ert-deftest</span> <span class="one-hl-function-name">osta-html-functionality</span> ()
+<div><h2 id="one-a9a43c36ce">Test the functionalities</h2><div><pre><code class="one-hl one-hl-block">(<span class="one-hl-keyword">ert-deftest</span> <span class="one-hl-function-name">osta-html-functionality</span> ()
   (<span class="one-hl-keyword">let</span> ((osta-html-raise-error-p nil))
     <span class="one-hl-comment-delimiter">;; </span><span class="one-hl-comment">`</span><span class="one-hl-comment"><span class="one-hl-constant">osta-html-REC</span></span><span class="one-hl-comment">'
 </span>    (<span class="one-hl-keyword">should</span> (string= (osta-html-REC nil) <span class="one-hl-string">""</span>))
@@ -417,7 +431,7 @@ components containing <code class="one-hl one-hl-inline">%s</code> strings.
 </div>
 </div>
 
-<div><h2 id="one-a76ef9463f">Test the robustness</h2><div><h3 id="one-adff51346">50 nested ~:div~ vs. 10000 nested ~:div~</h3><div><pre><code class="one-hl one-hl-block">(<span class="one-hl-keyword">defun</span> <span class="one-hl-function-name">nested-foo-comp</span> (n)
+<div><h2 id="one-73e0d12353">Test the robustness</h2><div><h3 id="one-92a6f58880">50 nested :div vs. 10000 nested :div</h3><div><pre><code class="one-hl one-hl-block">(<span class="one-hl-keyword">defun</span> <span class="one-hl-function-name">nested-foo-comp</span> (n)
   <span class="one-hl-doc">"Construct nested list where car is the keyword :div.
 For instance: (nested-foo-comp 3) -&gt; (:div (:div (:div \"foo\")))"</span>
   (<span class="one-hl-keyword">let</span> ((comp <span class="one-hl-string">"foo"</span>))
@@ -438,7 +452,7 @@ For instance: (nested-foo-comp 3) -&gt; (:div (:div (:div \"foo\")))"</span>
 </div>
 </div>
 
-<div><h3 id="one-ec4e223e1e">Performance</h3><div><pre><code class="one-hl one-hl-block">(<span class="one-hl-keyword">let</span> ((comp '(<span class="one-hl-ta-colon-keyword">:p</span> <span class="one-hl-string">"foo"</span>)))
+<div><h3 id="one-c185ae5026">Performance</h3><div><pre><code class="one-hl one-hl-block">(<span class="one-hl-keyword">let</span> ((comp '(<span class="one-hl-ta-colon-keyword">:p</span> <span class="one-hl-string">"foo"</span>)))
   (<span class="one-hl-keyword">dolist</span> (osta-html '(osta-html-REC osta-html-ITER))
     (message <span class="one-hl-string">"------------------------------------"</span>)
     (<span class="one-hl-keyword">dotimes</span> (_ 15)
@@ -481,4 +495,18 @@ osta-html-ITER    0.000182   0 0.000</code></pre>
 </div>
 </div>
 </div>
-<div class="nav"><a href="/jack-html-implementation-details/">PREV</a></div></div></body></html>
+<div class="nav"><a href="/jack-html-implementation-details/">PREV</a><a href="/jack-html-implementation-details/">RANDOM</a></div></article></div></body><script>
+function sidebarShow() {
+  if (window.innerWidth < 481)
+    document.getElementById('sidebar-left').style.width = '75vw';
+  else {
+    document.getElementById('sidebar-left').style.width = 'min(300px, 34vw)';
+  }
+  document.getElementById('sidebar-main').setAttribute('onclick', 'sidebarHide()');
+  document.getElementById('sidebar-main').style.display = 'block';
+}
+function sidebarHide() {
+  document.getElementById('sidebar-left').style.width = '0';
+  document.getElementById('sidebar-main').style.display = 'none';
+}
+</script></html>

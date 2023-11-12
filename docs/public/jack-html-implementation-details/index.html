@@ -1,5 +1,11 @@
-<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1" /><link rel="stylesheet" type="text/css" href="/one.css" /><title>jack-html implementation details</title></head><body><div class="header"><a href="/">Jack</a></div><div class="content"><div class="title"><h1>jack-html implementation details</h1></div><div></div>
-<div><h2 id="one-f42616f106">Summary</h2><div><p>In this post, we show how <code class="one-hl one-hl-inline">jack-html</code> processes the following <b>component</b>
+<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1" /><link rel="stylesheet" type="text/css" href="/one.css" /><title>jack-html implementation details</title></head><body><div id="sidebar-left" onclick="followSidebarLink()"><div><div>Pages</div></div><ul><li><a href="/">Jack</a></li><li><a href="/jack-html-implementation-details/">jack-html implementation details</a></li><li><a href="/recursive-vs-iterative-implementation-of-jack-html-in-elisp/">Recursive vs. iterative implementation of jack-html in Elisp</a></li></ul></div><div id="sidebar-main"></div><div id="sidebar-header"><svg id="hamburger" viewBox="0 0 24 24" onclick="sidebarShow()"><path d="M21,6H3V5h18V6z M21,11H3v1h18V11z M21,17H3v1h18V17z"></path></svg><a href="/">Jack</a></div><div id="sidebar-content"><div id="sidebar"><ul><li><a href="/">Jack</a></li><li><a href="/jack-html-implementation-details/">jack-html implementation details</a></li><li><a href="/recursive-vs-iterative-implementation-of-jack-html-in-elisp/">Recursive vs. iterative implementation of jack-html in Elisp</a></li></ul></div><article><div class="title"><h1>jack-html implementation details</h1></div><div class="toc"><div><div>Table of content</div><div>
+<ul>
+<li><a href="#one-60a2b643c4">Summary</a></li>
+<li><a href="#one-a84a313c55">Description of the program</a></li>
+<li><a href="#one-469f5109b9">Running the program step by step</a></li>
+</ul>
+</div></div></div><div></div>
+<div><h2 id="one-60a2b643c4">Summary</h2><div><p>In this post, we show how <code class="one-hl one-hl-inline">jack-html</code> processes the following <b>component</b>
 </p>
 
 <pre><code class="one-hl one-hl-block">'(<span class="one-hl-ta-colon-keyword">:div/foo.bar</span>
@@ -23,7 +29,7 @@
 </div>
 </div>
 
-<div><h2 id="one-17dc968c6e">Description of the program</h2><div><p>In this section we call <code class="one-hl one-hl-inline">input-tree</code> the data structure <code class="one-hl one-hl-inline">jack-html</code>
+<div><h2 id="one-a84a313c55">Description of the program</h2><div><p>In this section we call <code class="one-hl one-hl-inline">input-tree</code> the data structure <code class="one-hl one-hl-inline">jack-html</code>
 receives as input.
 </p>
 
@@ -193,7 +199,7 @@ return the concatenation of the left part and the right part of <code class="one
 </div>
 </div>
 
-<div><h2 id="one-adc3d8ed98">Running the program step by step</h2><div><p>Let&apos;s go through each iteration that the following evaluation implies
+<div><h2 id="one-469f5109b9">Running the program step by step</h2><div><p>Let&apos;s go through each iteration that the following evaluation implies
 by printing out and commenting the successive states of our program:
 </p>
 
@@ -511,4 +517,18 @@ part of <code class="one-hl one-hl-inline">tree</code>.
 <pre><code class="one-hl one-hl-block"><span class="one-hl-string">"&lt;div id=\"foo\" class=\"bar\"&gt;A&lt;p class=\"baz\"&gt;B&lt;hr /&gt;C&lt;/p&gt;DEF&lt;/div&gt;"</span></code></pre>
 </div>
 </div>
-<div class="nav"><a href="/recursive-vs-iterative-implementation-of-jack-html-in-elisp/">NEXT</a></div></div></body></html>
+<div class="nav"><a href="/">PREV</a><a href="/recursive-vs-iterative-implementation-of-jack-html-in-elisp/">RANDOM</a><a href="/recursive-vs-iterative-implementation-of-jack-html-in-elisp/">NEXT</a></div></article></div></body><script>
+function sidebarShow() {
+  if (window.innerWidth < 481)
+    document.getElementById('sidebar-left').style.width = '75vw';
+  else {
+    document.getElementById('sidebar-left').style.width = 'min(300px, 34vw)';
+  }
+  document.getElementById('sidebar-main').setAttribute('onclick', 'sidebarHide()');
+  document.getElementById('sidebar-main').style.display = 'block';
+}
+function sidebarHide() {
+  document.getElementById('sidebar-left').style.width = '0';
+  document.getElementById('sidebar-main').style.display = 'none';
+}
+</script></html>
