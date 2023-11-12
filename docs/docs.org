@@ -1,12 +1,13 @@
 * Jack
 :PROPERTIES:
-:ONE: one-default-home
+:ONE: one-default-with-sidebar
 :CUSTOM_ID: /
 :ONE_CREATED_AT: [2022-02-10 Thu]
-:ONE_UPDATED_AT: [2023-11-07 Tue]
+:ONE_UPDATED_AT: [2023-11-12 Sun]
 :END:
+** HTML generator for Emacs Lisp
 
-[[https://github.com/tonyaldon/jack][jack]] is a HTML generator library for Emacs Lisp.
+You can find the code here: https://github.com/tonyaldon/jack.
 
 To install it put ~jack.el~ file in your load path and require ~jack~
 like this:
@@ -125,7 +126,7 @@ If you want to read about its implementation, here are two articles:
 
 * jack-html implementation details
 :PROPERTIES:
-:ONE: one-default
+:ONE: one-default-doc
 :CUSTOM_ID: /jack-html-implementation-details/
 :ONE_CREATED_AT: [2022-02-08 Tue]
 :ONE_UPDATED_AT: [2022-11-05 Sat]
@@ -556,10 +557,10 @@ part of ~tree~.
 
 * Recursive vs. iterative implementation of jack-html in Elisp
 :PROPERTIES:
-:ONE: one-default
+:ONE: one-default-doc
 :CUSTOM_ID: /recursive-vs-iterative-implementation-of-jack-html-in-elisp/
 :ONE_CREATED_AT: [2022-02-07 Mon]
-:ONE_UPDATED_AT: [2022-11-05 Sat]
+:ONE_UPDATED_AT: [2022-11-13 Sun]
 :END:
 ** jack-html was named osta-html
 
@@ -662,7 +663,7 @@ also changed the way ~osta-html~ builds the html strings removing the
 use of the function ~format~ that was causing wrong results with string
 components containing ~%s~ strings.
 
-** ~osta-html-REC~ (recursive implementation of ~osta-html~)
+** osta-html-REC (recursive implementation of osta-html)
 
 #+BEGIN_SRC emacs-lisp
 ;; commit 554d7337df242124822b6adcada50d1a99bac4a4
@@ -759,7 +760,7 @@ components containing ~%s~ strings.
     (apply #'concat (nreverse children))))
 #+END_SRC
 
-** ~osta-html-ITER~ (iterative implementation of ~osta-html~)
+** osta-html-ITER (iterative implementation of osta-html)
 
 #+BEGIN_SRC emacs-lisp
 ;; commit cd43e0bc6d2bf7affcc1fce0b071fa8f3f1978c0
@@ -949,7 +950,7 @@ components containing ~%s~ strings.
 #+END_SRC
 
 ** Test the robustness
-*** 50 nested ~:div~ vs. 10000 nested ~:div~
+*** 50 nested :div vs. 10000 nested :div
 
 #+BEGIN_SRC emacs-lisp
 (defun nested-foo-comp (n)
